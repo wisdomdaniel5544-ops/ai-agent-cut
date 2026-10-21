@@ -1,0 +1,229 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E0F13"><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/static/icon.svg">
+<title>AI AGENT CUT</title>
+<style>
+:root{--ink:#0E0F13;--card:#181A21;--card2:#232633;--lime:#C6FF3D;--coral:#FF5A5F;--violet:#7B61FF;--cyan:#3DF2FF;--soft:#9AA0AE}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--ink);color:#fff;padding:16px 14px 120px;max-width:760px;margin:auto}
+.top{display:flex;justify-content:space-between;align-items:center}
+.logo{font-weight:900;font-size:23px;letter-spacing:.5px}.logo b{color:var(--lime);text-shadow:0 0 14px #c6ff3d80}.logo i{font-style:normal;color:var(--coral)}
+.icon-btn{background:var(--card2);border:0;color:#fff;border-radius:14px;padding:10px 12px;font-size:15px;font-weight:700;cursor:pointer}
+.tag{color:var(--soft);margin:2px 0 16px;font-size:15px}
+.steps{display:flex;gap:8px;margin-bottom:14px}.steps div{flex:1;text-align:center;padding:8px 4px;border-radius:999px;background:var(--card);color:var(--soft);font-weight:700;font-size:14px}
+.steps .on{background:var(--lime);color:var(--ink);box-shadow:0 0 18px #c6ff3d55}
+.card{background:var(--card);border-radius:22px;padding:16px;margin-bottom:14px}
+.drop{display:block;border:3px dashed #2E3240;border-radius:20px;padding:24px 12px;text-align:center;cursor:pointer;font-size:18px;font-weight:700}
+.drop .big{font-size:44px}.drop.has{border-color:var(--lime)}
+input[type=url],input[type=text],select,textarea{width:100%;font-size:16px;padding:14px;border-radius:14px;border:0;background:var(--card2);color:#fff;margin-top:10px;font-family:inherit}
+.go{position:fixed;left:14px;right:14px;bottom:16px;max-width:732px;margin:auto;font-size:20px;font-weight:900;padding:19px;border:0;border-radius:20px;background:var(--lime);color:var(--ink);box-shadow:0 8px 30px #c6ff3d50;cursor:pointer;z-index:5}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.chip{padding:10px 13px;border-radius:999px;background:var(--card2);font-weight:700;cursor:pointer;user-select:none;font-size:15px}
+.chip.on{background:var(--violet);box-shadow:0 0 12px #7b61ff70}
+.lbl{color:var(--soft);font-weight:700;font-size:13px;margin-top:14px;text-transform:uppercase;letter-spacing:.6px}
+details summary{cursor:pointer;color:var(--soft);font-weight:800;margin-top:12px;font-size:15px}
+.trim{margin-top:12px}.trim .rng{position:relative;height:36px}.trim input[type=range]{position:absolute;width:100%;pointer-events:none;-webkit-appearance:none;background:none;top:8px}
+.trim input[type=range]::-webkit-slider-thumb{pointer-events:auto;-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--lime);border:3px solid var(--ink)}
+.trim .track{position:absolute;top:19px;left:0;right:0;height:6px;background:var(--card2);border-radius:9px}.trim .sel{position:absolute;top:19px;height:6px;background:var(--cyan);border-radius:9px;box-shadow:0 0 10px var(--cyan)}
+.save{color:var(--cyan);font-weight:800;font-size:13px}
+.bar{height:14px;background:var(--card2);border-radius:99px;overflow:hidden}.bar div{height:100%;width:3%;background:linear-gradient(90deg,var(--violet),var(--lime));transition:width .6s}
+#msg{margin-top:10px;font-size:17px;font-weight:700}
+.clips{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.clip{background:var(--card);border-radius:20px;padding:10px}
+.pv{position:relative;border-radius:14px;overflow:hidden;background:#000}.pv video{width:100%;display:block}
+.score{position:absolute;top:8px;left:8px;background:var(--lime);color:var(--ink);font-weight:900;border-radius:12px;padding:4px 10px;font-size:18px;cursor:pointer;border:0;z-index:3}
+.safe{position:absolute;inset:0;pointer-events:none;z-index:2;display:none}.safe.on{display:block}
+.safe div{position:absolute;background:repeating-linear-gradient(45deg,#ff5a5f55 0 8px,#ff5a5f22 8px 16px);outline:1px dashed var(--coral)}
+.safe span{position:absolute;font-size:10px;font-weight:800;color:#fff;background:#ff5a5fcc;padding:1px 5px;border-radius:5px}
+.title{font-weight:800;margin:10px 2px 2px;font-size:16px}.why{color:var(--soft);font-size:13px;margin:0 2px 8px}
+.row{display:flex;gap:8px;flex-wrap:wrap}.btn{flex:1;text-align:center;padding:13px 8px;border-radius:14px;font-weight:800;border:0;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink);background:var(--lime);min-width:70px}
+.btn.alt{background:#2A2E3B;color:#fff}
+.panel{background:var(--card2);border-radius:14px;padding:12px;margin-top:10px;font-size:14px}
+.sbar{display:flex;align-items:center;gap:8px;margin:6px 0}.sbar b{width:58px;font-size:13px}.sbar .t{flex:1;height:10px;background:#11131a;border-radius:9px;overflow:hidden}.sbar .t i{display:block;height:100%;background:linear-gradient(90deg,var(--violet),var(--cyan))}
+.sent{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px solid #2E3240}.sent p{margin:0;flex:1}.sent button{background:none;border:0;font-size:18px;cursor:pointer}
+.sent.out p{color:var(--soft);font-style:italic}
+.sheet{position:fixed;inset:0;background:#000a;z-index:10;display:none;overflow:auto}.sheet.on{display:block}.sheet .card{max-width:640px;margin:30px auto}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid2 label{font-size:13px;color:var(--soft);font-weight:700}
+input[type=color]{width:100%;height:44px;border:0;border-radius:12px;background:var(--card2);margin-top:6px}
+.hide{display:none}
+</style></head><body>
+<div class="top"><div class="logo">AI AGENT<i>✚</i><b>CUT</b></div><div><button class="icon-btn" id="phoneBtn" onclick="phone()">📱 Phone</button> <button class="icon-btn" onclick="openBrand()">🎨 Brand</button></div></div>
+<div class="panel hide" id="phoneBox"></div>
+<div class="tag">Long video in. Viral clips out. ✂️🤖</div>
+<div class="steps"><div id="s1" class="on">① Add</div><div id="s2">② Clip</div><div id="s3">③ Export</div></div>
+
+<section id="p1"><div class="card">
+  <label class="drop" id="drop"><div class="big">🎬</div><span id="fname">Tap to pick a video</span>
+  <input id="file" type="file" accept="video/*" class="hide"></label>
+  <input id="url" type="url" placeholder="🔗 …or paste any video link" onchange="probeUrl()">
+  <div id="trimBox" class="trim hide"><div class="lbl">✂️ Only use this part <span class="save" id="saves"></span></div>
+    <div class="rng"><div class="track"></div><div class="sel" id="tsel"></div>
+    <input type="range" id="t0" min="0" max="100" value="0" step="1" oninput="trimUI()"><input type="range" id="t1" min="0" max="100" value="100" step="1" oninput="trimUI()"></div>
+    <div class="why" id="tlabel"></div></div>
+  <input id="prompt" type="text" placeholder="🔎 Find a moment (optional) — e.g. “pricing tips”">
+  <div class="chips" id="aspects"><span class="chip on" data-v="9:16">📱 9:16</span><span class="chip" data-v="4:5">🖼 4:5</span><span class="chip" data-v="1:1">⬛ 1:1</span><span class="chip" data-v="16:9">🖥 16:9</span></div>
+  <details><summary>⚙️ More (optional)</summary>
+   <div class="lbl">Length</div><div class="chips" id="lens"><span class="chip on" data-v="30-60">⚡ Auto</span><span class="chip" data-v="12-30">&lt;30s</span><span class="chip" data-v="30-60">30–60s</span><span class="chip" data-v="60-90">60–90s</span><span class="chip" data-v="90-180">1.5–3m</span></div>
+   <div class="lbl">Genre</div><div class="chips" id="genres"></div>
+   <div class="lbl">Style</div><div class="chips" id="styles"></div>
+   <div class="lbl">Magic</div><div class="chips" id="toggles"><span class="chip on" data-k="hook">🪝 Hook title</span><span class="chip on" data-k="keywords">🌈 Keyword colors</span><span class="chip" data-k="emoji">😀 Emoji</span><span class="chip on" data-k="fillers">🤐 Cut um/uh</span><span class="chip on" data-k="silence">🔇 Cut silences</span><span class="chip" data-k="pauses">⏩ Cut every pause</span><span class="chip" data-k="blur">🌫 Blur-fit</span><span class="chip" data-k="broll">🎞 Auto B-roll</span><span class="chip on" data-k="brand">🎨 My brand</span></div>
+   <div class="lbl">Clips</div><div class="chips" id="counts"><span class="chip" data-v="2">2</span><span class="chip on" data-v="3">3</span><span class="chip" data-v="5">5</span><span class="chip" data-v="8">8</span></div>
+   <div class="lbl">Language & captions</div>
+   <select id="lang"><option value="">🌍 Auto-detect language</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="pt">Português</option><option value="it">Italiano</option><option value="nl">Nederlands</option><option value="ar">العربية</option><option value="hi">हिन्दी</option><option value="yo">Yorùbá</option><option value="ha">Hausa</option><option value="sw">Kiswahili</option><option value="zh">中文</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="ru">Русский</option><option value="tr">Türkçe</option></select>
+   <label class="chip" style="display:inline-block;margin-top:10px">📄 Upload SRT<input id="srt" type="file" accept=".srt" class="hide" onchange="this.parentNode.firstChild.textContent='📄 '+this.files[0].name"></label>
+   <input id="brollq" type="text" placeholder="🎞 B-roll prompt (optional, needs Pexels key)">
+  </details>
+</div></section>
+
+<section id="p2" class="hide"><div class="card"><div class="bar"><div id="bar"></div></div><div id="msg">Getting started…</div></div></section>
+<section id="p3" class="hide">
+  <div class="chips" style="margin-bottom:12px"><span class="chip" id="safeT" onclick="toggleSafe()">📐 Safe zones</span><select id="safeP" style="width:auto;margin:0" onchange="drawSafe()"></select></div>
+  <div class="clips" id="clipsOut"></div></section>
+<button class="go" id="go" onclick="go()">✂️ Make clips</button>
+
+<div class="sheet" id="brandSheet"><div class="card">
+  <div class="top"><b style="font-size:20px">🎨 My brand</b><button class="icon-btn" onclick="brandSheet.classList.remove('on')">✕</button></div>
+  <div class="why">Saved once, used on every clip.</div>
+  <form id="bf">
+  <div class="grid2">
+   <label>Font<select name="font"><option>Anton</option><option>Bebas Neue</option><option>Montserrat Alternates ExtraBold</option><option>Antonio</option><option>DejaVu Sans</option></select></label>
+   <label>Size<input type="text" name="size" value="78"></label>
+   <label>Text<input type="color" name="color" value="#FFFFFF"></label><label>Highlight<input type="color" name="highlight" value="#C6FF3D"></label>
+   <label>Keywords<input type="color" name="keyword" value="#FF5A5F"></label><label>Stroke<input type="color" name="stroke_color" value="#000000"></label>
+   <label>Stroke width<input type="text" name="stroke" value="5"></label><label>Position (0 top–1 bottom)<input type="text" name="caption_y" value="0.69"></label>
+   <label>Layout<select name="layout"><option value="auto">auto</option><option value="crop">fill (crop)</option><option value="blur">fit (blur)</option></select></label>
+   <label>Logo corner<select name="logo_pos"><option value="tr">top right</option><option value="tl">top left</option><option value="br">bottom right</option><option value="bl">bottom left</option></select></label>
+  </div>
+  <div class="lbl">Files (optional)</div>
+  <div class="grid2"><label>🖼 Logo<input type="file" name="logo" accept="image/*"></label><label>🎵 Music (yours / royalty-free)<input type="file" name="music" accept="audio/*"></label>
+   <label>▶️ Intro<input type="file" name="intro" accept="video/*"></label><label>⏹ Outro<input type="file" name="outro" accept="video/*"></label></div>
+  <div class="lbl">Brand words (wrong=Right, one per line)</div><textarea name="vocab_text" rows="3" placeholder="opus=Opus&#10;ai agent cut=AI AGENT CUT"></textarea>
+  <div class="lbl">Words to bleep</div><textarea name="censor_text" rows="2" placeholder="damn, hell"></textarea>
+  <div class="why" id="bfiles"></div>
+  </form><button class="go" style="position:static;margin-top:14px" onclick="saveBrand()">💾 Save brand</button>
+</div></div>
+
+<script>
+const $=id=>document.getElementById(id); let JID=null, step=1, DUR=0, PRE={}, UPID=null, REP=null;
+const STEPS={'fetching input':['Loading video',6],'download attempt':['Trying another way…',8],'cutting silences':['Cutting silences 🔇',12],'reusing':['Loading',15],'using uploaded SRT':['Reading your captions',50],'picking clips':['Finding the best moments 🔎',58],'rendering':['Making clips 🎬',65],'done':['Done!',100]};
+function chipGroup(id,multi){$(id).onclick=e=>{const c=e.target.closest('.chip');if(!c)return;if(multi)c.classList.toggle('on');else{[...$(id).children].forEach(x=>x.classList.remove('on'));c.classList.add('on')}}}
+['aspects','lens','genres','styles','counts'].forEach(g=>chipGroup(g));chipGroup('toggles',1);
+const fmt=s=>{s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')};
+fetch('/api/presets').then(r=>r.json()).then(p=>{PRE=p;const em={bold_yellow:'💛 Bold',clean_white:'🤍 Clean',neon_pop:'💚 Neon'};
+ $('styles').innerHTML=p.presets.map((x,i)=>`<span class="chip ${i?'':'on'}" data-v="${x}">${em[x]||x}</span>`).join('');
+ const ge={auto:'⚡ Auto',podcast:'🎙 Podcast',qa:'❓ Q&A',tutorial:'🧑‍🏫 How-to',vlog:'🎥 Vlog',talk:'🎤 Talk',gaming:'🎮 Gaming',news:'📰 News'};
+ $('genres').innerHTML=p.genres.map((x,i)=>`<span class="chip ${i?'':'on'}" data-v="${x}">${ge[x]||x}</span>`).join('');
+ $('safeP').innerHTML=Object.entries(p.platforms).map(([k,v])=>`<option value="${k}">${v.icon} ${v.label}</option>`).join('')});
+function setDur(d){DUR=d;if(!d)return;$('trimBox').classList.remove('hide');$('t0').max=$('t1').max=Math.ceil(d);$('t0').value=0;$('t1').value=Math.ceil(d);trimUI()}
+function trimUI(){let a=+$('t0').value,b=+$('t1').value;if(a>b-5){a=Math.max(0,b-5);$('t0').value=a}
+ $('tsel').style.left=(a/DUR*100)+'%';$('tsel').style.width=((b-a)/DUR*100)+'%';$('tlabel').textContent=`${fmt(a)} → ${fmt(b)}  (${fmt(b-a)})`;
+ const cut=DUR-(b-a);$('saves').textContent=cut>1?`⏱ Saves ${fmt(cut)}`:''}
+$('file').onchange=()=>{const f=$('file').files[0];if(!f)return;$('fname').textContent='✅ '+f.name;$('drop').classList.add('has');$('url').value='';
+ const v=document.createElement('video');v.preload='metadata';v.onloadedmetadata=()=>setDur(v.duration);v.src=URL.createObjectURL(f)};
+async function probeUrl(){if(!$('url').value)return;$('tlabel').textContent='';const r=await(await fetch('/api/probe?url='+encodeURIComponent($('url').value))).json();if(r.duration)setDur(r.duration)}
+const sel=id=>$(id).querySelector('.on')?.dataset.v, on=k=>$('toggles').querySelector(`[data-k=${k}]`).classList.contains('on');
+function show(n){step=n;[1,2,3].forEach(i=>{$('p'+i).classList.toggle('hide',i!==n);$('s'+i).classList.toggle('on',i<=n)});
+  $('go').textContent=n===3?'➕ New video':'✂️ Make clips';$('go').classList.toggle('hide',n===2)}
+async function chunkedUpload(f){ // resumable 8 MB chunks, works for hours-long files
+  const key='up:'+f.name+':'+f.size;let id=localStorage.getItem(key),off=0;
+  if(id){const s=await fetch('/api/uploads/'+id);if(s.ok)off=(await s.json()).offset;else id=null}
+  if(!id){id=(await(await fetch('/api/uploads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:f.name})})).json()).id;localStorage.setItem(key,id)}
+  const CH=8*1024*1024;
+  while(off<f.size){let tries=0;
+    while(true){try{const r=await fetch(`/api/uploads/${id}?offset=${off}`,{method:'PUT',body:f.slice(off,off+CH)});const j=await r.json();
+      if(r.ok||r.status===409){off=j.offset;break}throw 0}catch(e){if(++tries>5)throw new Error('Upload keeps failing — check your connection and tap Make clips again (it resumes).');await new Promise(r=>setTimeout(r,1500*tries))}}
+    $('msg').textContent=`Uploading ${Math.floor(off/f.size*100)}% ☁️`;$('bar').style.width=(off/f.size*5)+'%'}
+  localStorage.removeItem(key);return id}
+async function go(){
+  if(step===3){show(1);return}
+  const f=$('file').files[0];if(!f&&!$('url').value){$('fname').textContent='👆 Pick a video or paste a link';return}
+  show(2);const fd=new FormData();
+  try{if(f)fd.append('upload_id',await chunkedUpload(f))}catch(e){$('msg').textContent='😕 '+e.message;$('go').classList.remove('hide');step=1;return}
+  const [mn,mx]=sel('lens').split('-');
+  const a={url:$('url').value,clips:sel('counts'),preset:sel('styles')||'bold_yellow',model:'small',aspect:sel('aspects'),fit:on('blur')?'blur':'auto',
+   prompt:$('prompt').value,genre:sel('genres')||'auto',min_len:mn,max_len:mx,language:$('lang').value,broll:$('brollq').value||(on('broll')?'auto':'')};
+  for(const k in a)fd.append(k,a[k]);for(const k of ['hook','keywords','emoji','fillers','pauses','silence','brand'])fd.append(k,on(k));
+  if(DUR&&(+$('t0').value>0||+$('t1').value<Math.ceil(DUR))){fd.append('trim_start',$('t0').value);if(+$('t1').value<Math.ceil(DUR))fd.append('trim_end',$('t1').value)}
+  if($('srt').files[0])fd.append('srt',$('srt').files[0]);
+  const r=await(await fetch('/api/jobs',{method:'POST',body:fd})).json();
+  if(r.error){$('msg').textContent='😕 '+r.error;return} poll(r.id);
+}
+async function poll(id){
+  const j=await(await fetch('/api/jobs/'+id)).json();const last=(j.log||[]).slice(-1)[0]||'';
+  for(const k in STEPS)if(last.startsWith(k)){$('msg').textContent=STEPS[k][0];$('bar').style.width=STEPS[k][1]+'%'}
+  const t=last.match(/transcribing (\d+)%/);if(t){$('msg').textContent=`Listening 👂 ${t[1]}%`;$('bar').style.width=(15+t[1]*0.4)+'%'}
+  const m=last.match(/rendering clip (\d+)\/(\d+)/);if(m){$('msg').textContent=`Making clip ${m[1]} of ${m[2]} 🎬`;$('bar').style.width=(60+38*m[1]/m[2])+'%'}
+  if(j.status==='running')return setTimeout(()=>poll(id),1500);
+  if(j.status==='error'){$('msg').textContent='😕 '+last.slice(0,220);$('go').classList.remove('hide');step=3;$('go').textContent='↩️ Try again';return}
+  render(id,j.report);show(3);
+}
+const bars=d=>d?['hook','flow','value','trend'].map(k=>`<div class="sbar"><b>${k}</b><div class="t"><i style="width:${d[k]}%"></i></div><span>${d[k]}</span></div>`).join('')+(d.prompt!=null?`<div class="sbar"><b>prompt</b><div class="t"><i style="width:${d.prompt}%"></i></div><span>${d.prompt}</span></div>`:''):'';
+function render(id,rep){JID=id;REP=rep;
+  $('clipsOut').innerHTML=rep.clips.map((c,i)=>{const n=c.file.split('/').pop(),k=i+1;return `<div class="clip">
+   <div class="pv"><video src="/files/${id}/${n}?v=${c.edited||0}" controls playsinline preload="metadata"></video><div class="safe" id="sf${k}"></div>
+   <button class="score" onclick="tg('sc${k}')">🔥 ${c.score}</button></div>
+   <div class="panel hide" id="sc${k}"><b>Why ${c.score}?</b> ${c.reason||''}${bars(c.detail)}</div>
+   <div class="title">${c.title||''}</div><div class="why">${Math.round(c.duration||0)}s · ${c.reframe} ${c.broll?'· 🎞 '+c.broll:''}</div>
+   <div class="row"><a class="btn" href="/files/${id}/${n}" download>⬇️ Save</a><button class="btn alt" onclick="exportUI(${k})">📤 Platforms</button></div>
+   <div class="row" style="margin-top:8px"><button class="btn alt" onclick="edit(${k})">✏️ Words</button><button class="btn alt" onclick="trans(${k})">📜 Transcript</button>
+   <button class="btn alt" onclick="tg('x${k}')">🎬 XML</button></div>
+   <div class="panel hide" id="x${k}">Open in your editor: <a style="color:var(--lime)" href="/api/jobs/${id}/clips/${k}/xml?kind=fcpxml">Final Cut / Resolve (.fcpxml)</a> · <a style="color:var(--lime)" href="/api/jobs/${id}/clips/${k}/xml?kind=xmeml">Premiere (.xml)</a></div>
+   <div id="ed${k}"></div></div>`}).join('');drawSafe();
+}
+const tg=id=>$(id).classList.toggle('hide');
+function toggleSafe(){$('safeT').classList.toggle('on');drawSafe()}
+function drawSafe(){if(!REP||!PRE.platforms)return;const p=PRE.platforms[$('safeP').value],[t,b,l,r]=p.safe,onn=$('safeT').classList.contains('on');
+  document.querySelectorAll('.safe').forEach(el=>{el.classList.toggle('on',onn);el.innerHTML=
+   `<div style="left:0;right:0;top:0;height:${t*100}%"><span style="left:4px;bottom:2px">${p.label} top UI</span></div><div style="left:0;right:0;bottom:0;height:${b*100}%"><span style="left:4px;top:2px">caption / buttons</span></div><div style="left:0;top:${t*100}%;bottom:${b*100}%;width:${l*100}%"></div><div style="right:0;top:${t*100}%;bottom:${b*100}%;width:${r*100}%"><span style="right:2px;top:4px">♥ 💬 ↗</span></div>`})}
+async function edit(i){
+  const d=await(await fetch(`/api/jobs/${JID}/clips/${i}/words`)).json();
+  $('ed'+i).innerHTML=`<div class="panel"><input id="t${i}" type="text" value="${(d.title||'').replace(/"/g,'&quot;')}" placeholder="Hook title">
+   <textarea id="w${i}" rows="5">${d.words.join(' ')}</textarea><div class="why">Fix words in place · type - to drop one</div>
+   <div class="row" style="margin-top:8px"><button class="btn" onclick="save(${i},${d.words.length})">🔁 Update clip</button></div></div>`;
+}
+async function save(i,n){
+  let ws=$('w'+i).value.trim().split(/\s+/);
+  if(ws.length!==n){alert(`Keep ${n} words (fix spelling word-for-word; type - to drop a word)`);return}
+  ws=ws.map(w=>w==='-'?'':w);$('ed'+i).innerHTML='<div class="panel">⏳ Updating…</div>';
+  const r=await(await fetch(`/api/jobs/${JID}/clips/${i}/words`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({words:ws,title:$('t'+i).value})})).json();
+  if(r.error){$('ed'+i).innerHTML='<div class="panel">😕 '+r.error+'</div>';return}reload();
+}
+async function reload(){const j=await(await fetch('/api/jobs/'+JID)).json();render(JID,j.report)}
+let TR=null;
+async function trans(i){
+  TR=TR||await(await fetch(`/api/jobs/${JID}/transcript`)).json();const c=REP.clips[i-1];
+  const parts=c.parts||[[c.start,c.end]],inClip=s=>parts.some(([a,b])=>s.start>=a-0.05&&s.end<=b+0.05);
+  const mine=TR.filter(inClip),rest=TR.filter(s=>!inClip(s));
+  $('ed'+i).innerHTML=`<div class="panel"><b>In this clip</b> <span class="why">tap 🗑 to cut a sentence</span>
+   ${mine.map(s=>`<div class="sent" id="se${i}_${s.i}"><p>${s.text}</p><button title="delete" onclick="this.parentNode.classList.toggle('out')">🗑</button></div>`).join('')}
+   <details><summary>➕ Add a section from the full transcript</summary>${rest.map(s=>`<div class="sent"><p><span class="why">${fmt(s.start)}</span> ${s.text}</p><button title="add" onclick="this.textContent=this.textContent==='➕'?'✅':'➕'" data-s="${s.start}" data-e="${s.end}">➕</button></div>`).join('')}</details>
+   <div class="row" style="margin-top:8px"><button class="btn" onclick="applySec(${i})">🔁 Update clip</button></div></div>`;
+}
+async function applySec(i){
+  const rm=[...document.querySelectorAll(`#ed${i} .sent.out`)].map(el=>{const s=TR[+el.id.split('_')[1]];return [s.start,s.end]});
+  const add=[...document.querySelectorAll(`#ed${i} button[data-s]`)].filter(b=>b.textContent==='✅').map(b=>[+b.dataset.s,+b.dataset.e]);
+  if(!rm.length&&!add.length)return;$('ed'+i).innerHTML='<div class="panel">⏳ Re-cutting…</div>';
+  const r=await(await fetch(`/api/jobs/${JID}/clips/${i}/sections`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({remove:rm,add:add})})).json();
+  if(r.error){$('ed'+i).innerHTML='<div class="panel">😕 '+r.error+'</div>';return}reload();
+}
+function exportUI(i){
+  $('ed'+i).innerHTML=`<div class="panel"><b>Export for…</b> <span class="why">pick several → one zip</span><div class="chips" id="pl${i}">${Object.entries(PRE.platforms).map(([k,v])=>`<span class="chip" data-v="${k}">${v.icon} ${v.label}</span>`).join('')}</div>
+   <div class="row" style="margin-top:10px"><button class="btn" onclick="doExport(${i})">📦 Make zip</button></div><div id="exs${i}" class="why"></div></div>`;chipGroup('pl'+i,1);
+}
+async function doExport(i){
+  const pl=[...$('pl'+i).querySelectorAll('.on')].map(c=>c.dataset.v);if(!pl.length)return;
+  const r=await(await fetch(`/api/jobs/${JID}/clips/${i}/export`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({platforms:pl})})).json();
+  const tick=async()=>{const s=await(await fetch('/api/exports/'+r.key)).json();
+    if(s.status==='running'){$('exs'+i).textContent='⏳ '+(s.log.slice(-1)[0]||'starting')+'…';return setTimeout(tick,1500)}
+    $('exs'+i).innerHTML=s.status==='done'?`<a class="btn" style="display:block;margin-top:8px" href="/files/${JID}/${s.file}" download>⬇️ Download zip</a>`:'😕 '+s.error};tick();
+}
+async function phone(){const b=$('phoneBox');b.classList.toggle('hide');if(b.classList.contains('hide'))return;
+  const r=await fetch('/api/lan',{method:'POST'});const j=await r.json();
+  b.innerHTML=j.url?`📱 In the Android app, type:<br><b style="font-size:20px;color:var(--lime)">${j.url}</b><div class="why">Phone and PC on the same Wi-Fi. Anyone on this Wi-Fi can open it while the app runs.</div>`:'You are already on the phone link 👍'}
+if(!['127.0.0.1','localhost'].includes(location.hostname))document.getElementById('phoneBtn').classList.add('hide');
+async function openBrand(){const t=await(await fetch('/api/template')).json();const f=$('bf');
+  for(const [k,v] of Object.entries(t)){const el=f.elements[k];if(el&&el.type!=='file')el.value=v}
+  if(t.vocab)f.elements.vocab_text.value=Object.entries(t.vocab).map(([a,b])=>a+'='+b).join('\n');if(t.censor)f.elements.censor_text.value=t.censor.join(', ');
+  $('bfiles').textContent=['logo','music','intro','outro'].filter(k=>t[k]).map(k=>'✅ '+k).join('  ');brandSheet.classList.add('on')}
+async function saveBrand(){await fetch('/api/template',{method:'POST',body:new FormData($('bf'))});brandSheet.classList.remove('on')}
+const q=new URLSearchParams(location.search).get('job');if(q){show(2);poll(q)}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+</script></body></html>

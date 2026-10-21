@@ -1,0 +1,49 @@
+name: build-installers
+on:
+  push: { tags: ["v*"] }
+  workflow_dispatch:
+jobs:
+  windows-installer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y nsis unzip
+      - run: pip install faster-whisper huggingface_hub && python -c "from faster_whisper import WhisperModel; WhisperModel('small')"
+      - run: BUILD=$RUNNER_TEMP/b OUT=dist VERSION=${GITHUB_REF_NAME#v} bash packaging/windows/build_windows.sh || BUILD=$RUNNER_TEMP/b OUT=dist bash packaging/windows/build_windows.sh
+      - run: cd dist && cp AIAgentCut-Setup-*.exe AIAgentCut-Setup.exe
+      - uses: actions/upload-artifact@v4
+        with: { name: windows, path: dist/AIAgentCut-Setup.exe }
+  windows-smoke-test:            # real Windows: silent install, start server, process a short clip
+    needs: windows-installer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: windows }
+      - shell: pwsh
+        run: |
+          Start-Process .\AIAgentCut-Setup.exe -ArgumentList "/S" -Wait
+          $I = "$env:LOCALAPPDATA\Programs\AIAgentCut"
+          $env:PATH = "$I\ffmpeg;$env:PATH"; $env:AIAC_MODEL_DIR = "$I\models"; $env:AIAC_DATA = "$env:RUNNER_TEMP\aac"; $env:HF_HUB_OFFLINE = "1"
+          ffmpeg -version | Select-Object -First 1
+          & "$I\python\python.exe" -c "import sys, os; sys.path.insert(0, r'$I\app'); import numpy, cv2, aiagentcut.server; from faster_whisper import WhisperModel; WhisperModel(os.path.join(r'$I\models', 'faster-whisper-small'), compute_type='int8'); print('imports + model OK')"
+          ffmpeg -f lavfi -i testsrc=size=1280x720:rate=30:duration=20 -f lavfi -i sine=f=440:duration=20 -shortest -c:v libx264 -c:a aac t.mp4
+          & "$I\python\python.exe" -c "import sys; sys.path.insert(0, r'$I\app'); from aiagentcut import engine; print(engine.silence_cut('t.mp4', 'c.mp4')['original'])"
+  android-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21" }
+      - uses: android-actions/setup-android@v3
+      - run: cd packaging/android && npm install && npx cap sync android
+      - name: keystore from secrets (optional; otherwise unsigned release)
+        if: ${{ env.KS != '' }}
+        env: { KS: "${{ secrets.ANDROID_KEYSTORE_B64 }}" }
+        run: |
+          echo "$KS" | base64 -d > $RUNNER_TEMP/ks.jks
+          printf 'storeFile=%s\nstorePassword=%s\nkeyAlias=aiagentcut\nkeyPassword=%s\n' "$RUNNER_TEMP/ks.jks" "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" > $RUNNER_TEMP/ks.properties
+          echo "AIAC_KEYSTORE_PROPS=$RUNNER_TEMP/ks.properties" >> $GITHUB_ENV
+      - run: cd packaging/android/android && ./gradlew assembleRelease
+      - uses: actions/upload-artifact@v4
+        with: { name: android, path: packaging/android/android/app/build/outputs/apk/release/*.apk }

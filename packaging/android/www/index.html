@@ -1,0 +1,29 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI AGENT CUT</title><style>
+:root{--ink:#0E0F13;--card:#181A21;--lime:#C6FF3D;--violet:#7B61FF;--coral:#FF5A5F;--soft:#9AA0AE}
+*{box-sizing:border-box}body{margin:0;background:var(--ink);color:#fff;font-family:system-ui,Roboto,sans-serif;padding:28px 18px;min-height:100vh}
+.logo{font-weight:900;font-size:26px}.logo i{font-style:normal;color:var(--coral)}.logo b{color:var(--lime);text-shadow:0 0 14px #c6ff3d80}
+.tag{color:var(--soft);margin:4px 0 22px}img{width:96px;display:block;margin:10px 0 18px}
+.card{background:var(--card);border-radius:22px;padding:18px;margin-bottom:14px}
+.step{display:flex;gap:12px;align-items:center;margin:10px 0;font-size:16px}.n{background:var(--violet);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-weight:900;flex:none}
+input{width:100%;font-size:17px;padding:16px;border-radius:16px;border:0;background:#232633;color:#fff;margin-top:8px}
+button{width:100%;margin-top:14px;font-size:20px;font-weight:900;padding:18px;border:0;border-radius:18px;background:var(--lime);color:var(--ink);box-shadow:0 8px 30px #c6ff3d50}
+.err{color:var(--coral);font-weight:700;margin-top:10px;min-height:20px}.small{color:var(--soft);font-size:13px;margin-top:10px}
+</style></head><body>
+<img src="icon.svg" alt=""><div class="logo">AI AGENT<i>✚</i><b>CUT</b></div><div class="tag">Long video in. Viral clips out.</div>
+<div class="card">
+ <div class="step"><span class="n">1</span>Open AI AGENT CUT on your PC (Windows app)</div>
+ <div class="step"><span class="n">2</span>Click <b>📱 Phone</b> there and copy the address</div>
+ <div class="step"><span class="n">3</span>Paste it here — same Wi-Fi</div>
+ <input id="srv" inputmode="url" placeholder="http://192.168.1.20:8765" autocomplete="off">
+ <button onclick="connect()">🔌 Connect</button><div class="err" id="err"></div>
+ <div class="small">Your videos are processed on your own computer (or your own server). Nothing is sent anywhere else.</div>
+</div>
+<script>
+const s=localStorage.getItem('server');if(s){document.getElementById('srv').value=s}
+async function connect(){let u=document.getElementById('srv').value.trim();if(!u)return;if(!/^https?:\/\//.test(u))u='http://'+u;u=u.replace(/\/+$/,'');
+ const e=document.getElementById('err');e.textContent='Connecting…';
+ try{const ctl=new AbortController();setTimeout(()=>ctl.abort(),6000);const r=await fetch(u+'/api/presets',{signal:ctl.signal});if(!r.ok)throw 0;
+  localStorage.setItem('server',u);location.href=u+'/'}catch(_){e.textContent='😕 Can’t reach it. Same Wi-Fi? Is the PC app open with Phone access on?'}}
+if(s&&!sessionStorage.getItem('tried')){sessionStorage.setItem('tried',1);connect()}
+</script></body></html>

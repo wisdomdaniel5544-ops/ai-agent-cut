@@ -1,0 +1,9 @@
+faster-whisper>=1.0   # MIT
+opencv-python-headless>=4.8   # Apache-2.0 (YuNet face model: MIT, in models/)
+numpy
+fastapi
+uvicorn
+python-multipart
+yt-dlp   # Unlicense
+# system: ffmpeg + ffprobe on PATH (keep as a separate LGPL binary when shipping)
+mcp

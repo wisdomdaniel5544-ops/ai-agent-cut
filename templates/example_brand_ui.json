@@ -1,0 +1,19 @@
+{
+ "font": "Anton",
+ "size": 80,
+ "color": "#FFFFFF",
+ "highlight": "#C6FF3D",
+ "keyword": "#3DF2FF",
+ "stroke_color": "#000000",
+ "stroke": 6,
+ "caption_y": 0.7,
+ "layout": "auto",
+ "logo_pos": "tr",
+ "logo": "/workspace/ai-agent-cut/templates/assets/logo.png",
+ "vocab": {
+  "casas": "KaZaA"
+ },
+ "censor": [
+  "piracy"
+ ]
+}

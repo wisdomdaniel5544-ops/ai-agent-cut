@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fcpxml>
+<fcpxml version="1.9"><resources>
+<format id="r1" frameDuration="1/25s" width="1280" height="720"/>
+<asset id="r2" name="cut.mp4" start="0s" duration="4978/25s" hasVideo="1" hasAudio="1" format="r1"><media-rep kind="original-media" src="file:///workspace/ai-agent-cut/runs/v2_talk/work/cut.mp4"/></asset>
+</resources><library><event name="AI AGENT CUT"><project name="They actually came from Google images."><sequence format="r1" duration="1428/25s" tcStart="0s"><spine>
+<asset-clip ref="r2" offset="0/25s" start="2908/25s" duration="1428/25s" name="cut.mp4"/>
+</spine></sequence></project></event></library></fcpxml>
