@@ -1,7 +1,7 @@
 # AI Agent Cut
 
 > **Founded by Wisdom Daniel — Founder & CEO, AI Agent Cut**
-> [X / @WisdomD64553](https://x.com/WisdomD64553) · [LinkedIn](https://www.linkedin.com/in/wisdom-daniel-a2002a2b4/) · Contact: set `CONTACT_EMAIL` in `web/index.html`
+> [X / @WisdomD64553](https://x.com/WisdomD64553) · [LinkedIn](https://www.linkedin.com/in/wisdom-daniel-a2002a2b4/) · Contact: [aiagentcutapp@gmail.com](mailto:aiagentcutapp@gmail.com)
 
 Long video (file or URL) → 3–5 vertical 720x1280 MP4 clips with word-by-word burned captions. Everything runs locally.
 

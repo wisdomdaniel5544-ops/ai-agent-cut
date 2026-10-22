@@ -276,7 +276,7 @@ const LEARN_LONG=[["ZMEFCbokVcY", "I Tested Every AI That Edits Videos For You"]
 const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 document.querySelectorAll('.lrow').forEach(r=>{const sh=r.dataset.k==='short';r.innerHTML=(sh?LEARN_SHORTS:LEARN_LONG).map(([id,t])=>`<a class="lv${sh?' s':''}" href="https://www.youtube.com/${sh?'shorts/':'watch?v='}${id}" target="_blank" rel="noopener"><img loading="lazy" src="https://i.ytimg.com/vi/${id}/${sh?'oardefault':'hqdefault'}.jpg" onerror="this.src='https://i.ytimg.com/vi/${id}/hqdefault.jpg'" alt=""><b>${esc(t)}</b><span>Daniel Bitton</span></a>`).join('')});
 // ---- config: set the public contact email here ----
-const CONTACT_EMAIL='hello@example.com'; // TODO: replace with the real address
+const CONTACT_EMAIL='aiagentcutapp@gmail.com';
 document.querySelectorAll('.contact').forEach(a=>a.href='mailto:'+CONTACT_EMAIL);document.querySelectorAll('.contactTxt').forEach(e=>e.textContent=CONTACT_EMAIL);
 async function setServer(){let u=$('srvIn').value.trim().replace(/\/+$/,'');if(u&&!/^https?:\/\//.test(u))u='http://'+u;
  if(u){try{const c=new AbortController();setTimeout(()=>c.abort(),6000);const r=await fetch(u+'/api/presets',{signal:c.signal});if(!r.ok)throw 0}catch(e){return toast("Can't reach it. Same Wi-Fi? Is the PC app open?")}}
