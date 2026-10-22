@@ -1,0 +1,11 @@
+jobs
+runs
+uploads
+dist
+input
+research
+samples
+leads
+packaging
+secrets
+*.log
