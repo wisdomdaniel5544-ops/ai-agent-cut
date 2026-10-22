@@ -7,7 +7,7 @@ mkdir -p "$B" "$OUT"; cd "$B"
 [ -f pyembed.zip ] || curl -sSL -o pyembed.zip https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip
 [ -f ffmpeg-win.zip ] || curl -sSL -o ffmpeg-win.zip https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip
 pip download -q --only-binary=:all: --platform win_amd64 --python-version 3.12 --implementation cp -d wheels \
-  faster-whisper opencv-python-headless numpy fastapi uvicorn python-multipart yt-dlp pillow mcp
+  faster-whisper opencv-python-headless numpy fastapi uvicorn python-multipart yt-dlp pillow mcp kokoro-onnx soundfile
 rm -rf "$ST"; mkdir -p "$ST/python/Lib/site-packages" "$ST/app" "$ST/ffmpeg" "$ST/models"
 unzip -q pyembed.zip -d "$ST/python"
 printf 'python312.zip\n.\nLib\\site-packages\n..\\app\nimport site\n' > "$ST/python/python312._pth"

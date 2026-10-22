@@ -23,3 +23,6 @@ local.properties
 *.jks
 keystore.properties
 samples/**/*.mp4
+models/
+jobs/
+!models/face_detection_yunet_2023mar.onnx

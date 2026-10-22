@@ -281,7 +281,7 @@ def llm_scorer_from_env():
             req = urllib.request.Request(url, json.dumps(body).encode(), {"Content-Type": "application/json"})
             out = json.loads(urllib.request.urlopen(req, timeout=120).read())["response"]
         else:
-            key = os.environ["GEMINI_API_KEY"]; model = os.environ.get("AIAC_GEMINI_MODEL", "gemini-2.0-flash")
+            key = os.environ["GEMINI_API_KEY"]; model = os.environ.get("AIAC_GEMINI_MODEL", "gemini-flash-latest")
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
             body = {"contents": [{"parts": [{"text": prompt + text[:4000]}]}], "generationConfig": {"responseMimeType": "application/json"}}
             req = urllib.request.Request(url, json.dumps(body).encode(), {"Content-Type": "application/json"})

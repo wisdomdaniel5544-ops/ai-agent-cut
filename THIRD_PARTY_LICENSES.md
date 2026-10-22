@@ -69,3 +69,11 @@ or a separate executable, unmodified.
 | RQ / Celery / Huey | BSD-2 / BSD-3 / MIT | Not needed for a single-user local app; thread pool is enough |
 | LosslessCut | GPL-2.0 | GPL desktop app; ideas only, no code |
 | whisper-timestamped | **AGPL-3.0** | Avoided (copyleft over network use) |
+
+## UGC mode (v4, unreleased)
+- **Kokoro-82M** weights (hexgrad): Apache-2.0. Used offline for UGC voiceovers. These are model files, downloaded to `models/kokoro/` and not committed.
+- **kokoro-onnx**: MIT. It runs in a separate venv subprocess.
+- **espeak-ng / espeakng-loader** (pulled in by kokoro-onnx for phonemes): GPL-3.0. It runs as an isolated subprocess and is not linked into the app's code.
+- **edge-tts** (fallback): LGPL-3.0 library. It calls Microsoft's online TTS service, so that service's terms apply.
+- **Piper** is optional and supported only through the user's own install (AIAC_PIPER_VOICE). piper1-gpl is GPL-3.0 and is not bundled.
+- **Firecrawl** and **Pexels** are external APIs. They are used only with the user's own keys.

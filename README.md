@@ -83,3 +83,25 @@ New endpoints in `aiagentcut/server.py`:
   and turns on `AIAC_LLM=gemini` scoring/hooks. ElevenLabs, Grok and Manus keys are kept only in the browser's localStorage
   and marked "coming soon" — not used by the backend yet.
 - Pricing / Ultra Pro checkout, credits counting and Google Drive import are UI-only for now.
+
+## v4: UGC mode (`aiagentcut/ugc.py`)
+You can switch between **Clip** and **UGC** at the top of the app. In UGC mode you paste a Content Rewards campaign brief (as text or a URL) and get:
+- a requirements checklist,
+- 3 hooks,
+- a 25-45 s script.
+
+Create options:
+- **Faceless:** voiceover, your B-roll / Pexels stock / a generated backdrop, animated captions, and a 9:16 MP4.
+- **My avatar:** for your own likeness only, and only after you tick the consent box. Lip-sync provider coming soon.
+- **Styles gallery:** pick a style and use Remake to rewrite the script in that structure.
+
+Keys you can add in Connect AI:
+- **Gemini** writes the scripts. Without a key, the built-in local writer is used.
+- **Firecrawl** reads campaign and product URLs.
+- **Pexels** provides stock B-roll.
+
+### Voiceover licenses
+- **Kokoro-82M** (default, offline): the model weights are Apache-2.0 and `kokoro-onnx` is MIT. The model (~116 MB) is downloaded on first use from the kokoro-onnx GitHub release into the data folder (`models/kokoro/`). It is not committed to this repo.
+- Kokoro's phonemizer uses **espeak-ng** (GPL-3.0) via `espeakng-loader`. It runs in a separate process and is not linked into this MIT code.
+- **edge-tts** (fallback, LGPL-3.0) uses Microsoft's online TTS service, so that service's terms apply.
+- **Piper** is optional. Set `AIAC_PIPER_VOICE` to use your own install. `piper1-gpl` is GPL-3.0 and is not bundled.

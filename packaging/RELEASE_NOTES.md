@@ -1,16 +1,25 @@
-## AI Agent Cut 3.0 — Long video in. Viral clips out.
+# AI Agent Cut v4.0.0: Clip + UGC
 
-**New look:** dark UI, new logo and launch intro, onboarding, Google/email sign-in (local profile), Projects home, a + sheet to paste a link or pick a video, Learn tab, Connect AI (bring your own Gemini key), pricing and About.
+## New: UGC mode
+A **Clip | UGC** switch sits at the top on mobile and desktop, and each mode has its own home screen.
 
-**Fixes and speed**
-- Fixed: YouTube AV1 videos crashed every render. They now download as H.264 or get converted automatically.
-- Fixed: silence removal crashed on long videos (out of memory). It is now audio-only and about 60x faster.
-- Fixed: jobs started from the new UI/API ran with hook titles, captions colours and filler/silence cutting switched off.
-- About 2x faster transcription on long videos, parallel clip renders and exports: a 56-min podcast went from 365 s to ~230 s on 8 CPU cores.
-- Clear error messages with what to do next, monotonic progress, auto-retry of a failed render.
+- **Brief to plan:** paste a Content Rewards UGC brief, as text or a URL. You get a requirements checklist, 3 hooks and a 25-45 s script.
+  - Gemini writes the script if you've added a key; otherwise the built-in local writer does.
+  - Firecrawl (optional key) reads campaign and product links.
+- **Faceless video:**
+  - Offline Kokoro voiceover, 5 voices. The model (~116 MB) downloads on first use.
+  - Your own B-roll, Pexels stock (optional key) or a generated backdrop.
+  - Animated captions and a 9:16 MP4.
+- **Styles gallery:** AI ad, explainer, review, unboxing and story, each with a **Remake** button.
+- **Export:** a brief checklist to tick before you submit, plus a caption you can copy.
+- **My avatar (coming soon):** consent-gated upload of your own selfie video and voice. Lip-sync provider is still to come. Celebrity and other people's likeness is blocked by the terms.
+- **Learn:** a new "Make money with UGC" row (links only).
+- **Connect Discord:** a join link to the SIHU server.
 
-**Downloads**
-- Windows 10/11 (64-bit): `AIAgentCut-Setup.exe`. Windows may show "Windows protected your PC": More info → Run anyway.
-- Android: `AIAgentCut.apk`. It connects to AI Agent Cut on your PC over the same Wi-Fi (Profile → Clipping server).
+## Licences
+- Kokoro-82M weights are Apache-2.0.
+- kokoro-onnx is MIT.
+- espeak-ng is GPL-3.0 and runs as a separate process.
+- edge-tts is the LGPL fallback.
 
-MIT licensed. Third-party licenses: THIRD_PARTY_LICENSES.md and LICENSE-NOTICES.txt (FFmpeg in the Windows build is GPL; source links included).
+See THIRD_PARTY_LICENSES.md.

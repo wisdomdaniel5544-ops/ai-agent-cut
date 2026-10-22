@@ -73,24 +73,86 @@ AI_KEYS = DATA / "ai_keys.json"
 def _apply_keys():
     k = json.loads(AI_KEYS.read_text()) if AI_KEYS.exists() else {}
     if k.get("gemini"): os.environ["GEMINI_API_KEY"] = k["gemini"]; os.environ.setdefault("AIAC_LLM", "gemini")
+    if k.get("firecrawl"): os.environ["FIRECRAWL_API_KEY"] = k["firecrawl"]
+    if k.get("pexels"): os.environ["PEXELS_API_KEY"] = k["pexels"]
     return k
 _apply_keys()
 
 @app.get("/api/ai-keys")
 def ai_keys_status():
     k = json.loads(AI_KEYS.read_text()) if AI_KEYS.exists() else {}
-    return {name: ("…" + v[-4:]) if v else "" for name, v in k.items()} | {"wired": ["gemini"]}
+    return {name: ("…" + v[-4:]) if v else "" for name, v in k.items()} | {"wired": ["gemini", "firecrawl", "pexels"]}
 
 @app.post("/api/ai-keys")
 def ai_keys_save(request: Request, provider: str = Body(..., embed=True), key: str = Body("", embed=True)):
     if request.client and request.client.host not in ("127.0.0.1", "::1", "localhost"):
         return JSONResponse({"error": "keys can only be set from this computer"}, 403)
-    if provider != "gemini": return JSONResponse({"error": "not wired yet"}, 400)
+    if provider not in ("gemini", "firecrawl", "pexels"): return JSONResponse({"error": "not wired yet"}, 400)
     k = json.loads(AI_KEYS.read_text()) if AI_KEYS.exists() else {}
     k[provider] = key.strip()
-    if not k[provider]: k.pop(provider); os.environ.pop("GEMINI_API_KEY", None)
+    if not k[provider]:
+        k.pop(provider); os.environ.pop({"gemini": "GEMINI_API_KEY", "firecrawl": "FIRECRAWL_API_KEY", "pexels": "PEXELS_API_KEY"}[provider], None)
     AI_KEYS.write_text(json.dumps(k)); os.chmod(AI_KEYS, 0o600); _apply_keys()
     return {"ok": True}
+
+# ---- UGC mode ----
+from . import ugc
+
+@app.get("/api/ugc/styles")
+def ugc_styles(): return {"styles": ugc.STYLES, "voices": list(ugc.VOICES), "avatar_provider": ugc.AVATAR_PROVIDER}
+
+@app.post("/api/ugc/brief")
+def ugc_brief(text: str = Body("", embed=True), url: str = Body("", embed=True), style: str = Body("ai_ad", embed=True)):
+    notes = []
+    try: return ugc.brief(text, url.strip(), style if style in ugc.STYLES else "ai_ad", log=notes.append) | {"notes": notes}
+    except ValueError as e: return JSONResponse({"error": str(e)}, 400)
+    except Exception as e: return JSONResponse({"error": "Couldn't read that brief. Paste the text instead. (" + str(e)[:120] + ")"}, 400)
+
+@app.post("/api/ugc/script")
+def ugc_script(product: str = Body(..., embed=True), benefit: str = Body("", embed=True), hook: str = Body("", embed=True),
+               style: str = Body("ai_ad", embed=True), lo: int = Body(20, embed=True), hi: int = Body(45, embed=True)):
+    """Remake: rebuild the script in another style without re-reading the brief."""
+    s = ugc.write_script(product, benefit or "save time every day", hook or f"Here's why I switched to {product}.", style, lo, hi)
+    return {"script": s, "words": len(s.split()), "est_seconds": round(len(s.split()) / ugc.WPS, 1)}
+
+def _run_ugc(jid, a):
+    j = JOBS[jid]
+    def log(m):
+        j["log"].append(m); j["progress"] = max(j["progress"], {"writing": 15, "finding": 30, "assembling": 45, "timing": 60, "rendering": 75}.get(m.split(" ")[0], j["progress"]))
+    try:
+        r = ugc.render_faceless(JOBS_DIR / jid, a["script"], a["hook"], a["voice"], a["broll"], a["stock"], a["preset"], log=log, product=a["product"])
+        rep = {"ugc": True, "brief": a.get("brief"), "clips": [r | {"score": None}], "options": {}}
+        (JOBS_DIR / jid / "report.json").write_text(json.dumps(rep, indent=1)); j["report"] = rep; j["status"] = "done"; j["progress"] = 100; j["log"].append("done")
+    except Exception as e:
+        j["status"] = "error"; j["log"].append(str(e)[-600:]); j["error"] = str(e)[:200] if isinstance(e, (ValueError, RuntimeError)) and len(str(e)) < 200 else friendly_error(e)
+
+@app.post("/api/ugc/jobs")
+def ugc_job(body: dict = Body(...)):
+    script = (body.get("script") or "").strip()
+    if len(script.split()) < 8: return JSONResponse({"error": "Write or generate a script first."}, 400)
+    broll = [str(_upload_path(u)) for u in body.get("broll_ids", []) if (UP_DIR / Path(u).name).exists()]
+    jid = uuid.uuid4().hex[:8]; (JOBS_DIR / jid).mkdir()
+    a = dict(script=script, hook=(body.get("hook") or "")[:90], voice=body.get("voice") or "warm_female", broll=broll,
+             stock=body.get("stock_query") or None, preset=body.get("preset") or "bold_yellow", product=body.get("product") or "", brief=body.get("brief"))
+    JOBS[jid] = {"status": "running", "log": [], "report": None, "progress": 5, "kind": "ugc"}
+    threading.Thread(target=_run_ugc, args=(jid, a), daemon=True).start()
+    return {"id": jid}
+
+AVATARS = DATA / "avatars"
+@app.post("/api/ugc/avatar")
+async def ugc_avatar(consent: str = Form(""), name: str = Form(""), selfie: UploadFile | None = File(None), voice: UploadFile | None = File(None)):
+    """'Clone yourself': stores the user's OWN selfie video + voice sample with a consent record. Lip-sync generation is a
+    pluggable provider (AIAC_AVATAR_PROVIDER); none is bundled because open lip-sync models aren't practical on CPU."""
+    if consent.lower() not in ("1", "true", "yes", "on"): return JSONResponse({"error": "Tick the consent box: you can only use your own face and voice."}, 400)
+    if not (selfie and selfie.filename) or not (voice and voice.filename): return JSONResponse({"error": "Add a selfie video and a voice sample."}, 400)
+    import time
+    aid = uuid.uuid4().hex[:10]; d = AVATARS / aid; d.mkdir(parents=True)
+    for f, n in ((selfie, "selfie"), (voice, "voice")):
+        with open(d / (n + Path(f.filename).suffix.lower()[:6]), "wb") as fh: shutil.copyfileobj(f.file, fh)
+    (d / "consent.json").write_text(json.dumps({"name": name[:80], "consent": True, "statement": "This is me and I consent to creating an AI avatar of my own face and voice.",
+                                                 "at": time.strftime("%Y-%m-%dT%H:%M:%S%z")}))
+    return {"id": aid, "status": "ready" if ugc.AVATAR_PROVIDER else "coming_soon",
+            "message": "Saved with your consent. Avatar videos are coming soon." if not ugc.AVATAR_PROVIDER else "Saved."}
 
 @app.get("/api/presets")
 def presets():
