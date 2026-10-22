@@ -1,72 +1,73 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AI AGENT CUT — Long video in. Viral clips out.</title>
-<meta name="description" content="Free clip maker: turn long videos into viral shorts with captions, hooks and smart framing. No watermark.">
-<meta property="og:title" content="AI AGENT CUT — Long video in. Viral clips out."><meta property="og:image" content="shot.png">
-<link rel="icon" href="icon.svg"><style>
-:root{--ink:#0E0F13;--card:#181A21;--lime:#C6FF3D;--violet:#7B61FF;--coral:#FF5A5F;--cyan:#3DF2FF;--soft:#9AA0AE}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,#7b61ff33,transparent),var(--ink);color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.wrap{max-width:1040px;margin:auto;padding:28px 20px 60px}
-nav{display:flex;justify-content:space-between;align-items:center}.logo{display:flex;gap:10px;align-items:center;font-weight:900;font-size:22px}.logo img{width:40px}
-.logo i{font-style:normal;color:var(--coral)}.logo b{color:var(--lime);text-shadow:0 0 14px #c6ff3d80}
-nav a{color:var(--soft);text-decoration:none;font-weight:700;margin-left:16px}
-.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:30px;align-items:center;margin-top:40px}
-h1{font-size:clamp(38px,6vw,64px);line-height:1.02;margin:0}h1 span{color:var(--lime);text-shadow:0 0 24px #c6ff3d60}
-.sub{color:var(--soft);font-size:19px;margin:18px 0 26px;line-height:1.5}
-.btns{display:flex;gap:12px;flex-wrap:wrap}.dl{display:flex;gap:12px;align-items:center;padding:16px 22px;border-radius:18px;font-weight:900;font-size:18px;text-decoration:none;color:var(--ink);background:var(--lime);box-shadow:0 8px 30px #c6ff3d50}
-.dl.v{background:var(--violet);color:#fff;box-shadow:0 8px 30px #7b61ff50}.dl small{display:block;font-weight:600;font-size:12px;opacity:.75}
-.free{margin-top:14px;color:var(--cyan);font-weight:800}
-.phone{background:var(--card);border-radius:34px;padding:12px;box-shadow:0 30px 80px #0008;max-width:330px;margin:auto}.phone img{width:100%;border-radius:24px;display:block}
-h2{font-size:30px;margin:60px 0 18px}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.step{background:var(--card);border-radius:22px;padding:22px}
-.step .n{font-size:38px}.step b{display:block;font-size:20px;margin:8px 0}.step p{color:var(--soft);margin:0;line-height:1.5}
-.feat{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.feat div{background:var(--card);border-radius:18px;padding:16px;font-weight:700}
-.feat span{display:block;color:var(--soft);font-weight:500;font-size:14px;margin-top:6px}
-.cta{margin-top:60px;background:linear-gradient(120deg,#7b61ff,#3b2bb8);border-radius:28px;padding:30px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
-.cta h3{margin:0;font-size:26px}.cta p{margin:6px 0 0;opacity:.85}
-.row{display:flex;gap:10px;flex-wrap:wrap}.pill{padding:14px 20px;border-radius:16px;font-weight:900;text-decoration:none;color:var(--ink);background:var(--lime)}.pill.d{background:#5865F2;color:#fff}
-.note{color:var(--soft);font-size:13px;margin-top:30px;line-height:1.6}
-@media(max-width:800px){.hero,.steps{grid-template-columns:1fr}.feat{grid-template-columns:1fr 1fr}nav a{display:none}}
+<title>AI Agent Cut — Long video in. Viral clips out.</title>
+<meta name="description" content="Free, open-source AI clip maker: turn long videos into viral shorts with animated captions, hook titles and smart framing. No watermark.">
+<meta property="og:title" content="AI Agent Cut — Long video in. Viral clips out."><meta property="og:image" content="shot.png">
+<meta name="theme-color" content="#000000"><link rel="icon" href="icon.svg">
+<style>
+:root{--c1:#121212;--c2:#1C1C1E;--c3:#2A2A2D;--mu:#A0A0A0;--ac:#C6FF3D}
+*{box-sizing:border-box}body{margin:0;background:#000;color:#fff;font-family:Inter,"SF Pro Display",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}.wrap{max-width:1120px;margin:auto;padding:0 22px}
+nav{display:flex;align-items:center;gap:12px;padding:20px 0}nav img{width:34px}nav b{font-size:18px;letter-spacing:-.02em}nav b span{color:var(--ac)}
+nav .sp{flex:1}nav a.l{color:var(--mu);text-decoration:none;font-weight:600;font-size:14px;margin-left:18px}
+h1{font-size:clamp(40px,7vw,76px);line-height:1.02;letter-spacing:-.04em;margin:56px 0 18px;font-weight:800}h1 span{color:var(--ac)}
+.lead{font-size:19px;color:var(--mu);max-width:640px;line-height:1.5}
+.dl{display:flex;gap:12px;flex-wrap:wrap;margin:30px 0 12px}
+.btn{display:inline-flex;align-items:center;gap:12px;padding:16px 22px;border-radius:14px;font-weight:700;font-size:16px;text-decoration:none;background:#fff;color:#000}
+.btn.dark{background:var(--c2);color:#fff;border:1px solid var(--c3)}.btn small{display:block;font-weight:500;font-size:12px;opacity:.65}
+.note{color:var(--mu);font-size:13px}
+.shot{margin:46px 0 0;border-radius:24px;border:1px solid var(--c3);width:100%;display:block}
+h2{font-size:32px;letter-spacing:-.03em;margin:80px 0 8px}.sub{color:var(--mu);margin:0 0 24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.card{background:var(--c1);border:1px solid #1d1d1f;border-radius:18px;padding:20px}.card b{display:block;font-size:16px;margin-bottom:6px}.card span{color:var(--mu);font-size:14px;line-height:1.5}
+.tag{display:inline-block;font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--ac);color:#000;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}.plan{background:var(--c1);border:1px solid var(--c3);border-radius:22px;padding:26px}.plan.hi{border-color:var(--ac)}
+.price{font-size:46px;font-weight:900;letter-spacing:-.04em}.plan ul{padding-left:18px;color:#ddd;line-height:1.9;font-size:15px}
+.social{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.soc{display:flex;align-items:center;gap:14px;padding:18px;border-radius:18px;text-decoration:none;border:1px solid}.soc i{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:none}
+.soc b{display:block}.soc span{color:var(--mu);font-size:13px}.soc em{margin-left:auto;font-style:normal;background:#fff;color:#000;font-weight:700;font-size:13px;padding:8px 14px;border-radius:999px}
+.founder{display:flex;gap:22px;align-items:center;background:var(--c1);border:1px solid var(--c3);border-radius:24px;padding:28px;flex-wrap:wrap}
+.ini{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#C6FF3D,#8BC34A);color:#000;font-weight:800;font-size:26px;display:flex;align-items:center;justify-content:center;flex:none}
+.lbl{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
+footer{color:var(--mu);font-size:13px;padding:60px 0 40px;line-height:1.7}
 </style></head><body><div class="wrap">
-<nav><div class="logo"><img src="icon.svg" alt="">AI AGENT<i>✚</i><b>CUT</b></div><div><a href="#how">How it works</a><a href="#download">Download</a><a href="https://discord.gg/uFBkExYq94">Discord</a></div></nav>
-<section class="hero" id="download"><div>
- <h1>Long video in.<br><span>Viral clips out.</span></h1>
- <div class="sub">Drop a podcast, stream or talk. Get scored, captioned, perfectly framed shorts for TikTok, Reels and Shorts — in minutes, on your own computer.</div>
- <div class="btns">
-  <a class="dl" id="win" href="#">🪟 Download for Windows<small>Windows 10/11 · 64-bit · ~610 MB</small></a>
-  <a class="dl v" id="apk" href="#">🤖 Get the Android app<small>APK · 3 MB · connects to your PC</small></a>
- </div>
- <div class="free">🆓 Free forever · no watermark · no account</div>
-</div><div class="phone"><img src="shot.png" alt="AI AGENT CUT app screenshot"></div></section>
+<nav><img src="icon.svg" alt=""><b>AI Agent <span>Cut</span></b><div class="sp"></div><a class="l" href="#features">Features</a><a class="l" href="#pricing">Pricing</a><a class="l" href="https://github.com/wisdomdaniel5544-ops/ai-agent-cut">GitHub</a></nav>
+<h1>Long video in.<br><span>Viral clips out.</span></h1>
+<p class="lead">Drop a podcast, stream or talk. AI Agent Cut finds the moments worth posting, frames the speaker, adds animated captions and a hook title, on your own computer. Free and open source, no watermark.</p>
+<div class="dl">
+ <a class="btn" id="win" href="https://github.com/wisdomdaniel5544-ops/ai-agent-cut/releases/latest/download/AIAgentCut-Setup.exe"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M3 5.5 10.5 4.5v7H3zM11.5 4.4 21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.4z"/></svg><span>Download for Windows<small>Windows 10/11 · 64-bit</small></span></a>
+ <a class="btn dark" id="apk" href="https://github.com/wisdomdaniel5544-ops/ai-agent-cut/releases/latest/download/AIAgentCut.apk"><svg width="22" height="22" viewBox="0 0 24 24" fill="#C6FF3D"><path d="M7 9h10v8a1 1 0 0 1-1 1h-1v3h-2v-3h-2v3H9v-3H8a1 1 0 0 1-1-1zM4.5 9a1.5 1.5 0 0 1 1.5 1.5v4a1.5 1.5 0 0 1-3 0v-4A1.5 1.5 0 0 1 4.5 9zm15 0a1.5 1.5 0 0 1 1.5 1.5v4a1.5 1.5 0 0 1-3 0v-4A1.5 1.5 0 0 1 19.5 9zM7 8a5 5 0 0 1 10 0zm2.5-6 1 1.6M14.5 2l-1 1.6"/></svg><span>Get the Android app<small>APK · connects to your PC</small></span></a>
+</div>
+<div class="note">Free plan includes every editing tool. Windows may say "Windows protected your PC" for new apps: click More info → Run anyway.</div>
+<img class="shot" src="shot.png" alt="AI Agent Cut app screens: onboarding, sign-in, add a video and pricing">
 
-<h2 id="how">3 steps. That’s it.</h2>
-<div class="steps">
- <div class="step"><div class="n">🎬</div><b>1 · Add</b><p>Drop a video file or paste any link — YouTube, TikTok, X, Instagram, Drive, Dropbox…</p></div>
- <div class="step"><div class="n">✂️</div><b>2 · Make clips</b><p>One tap. The app finds the best moments, frames the speaker, adds captions and a hook.</p></div>
- <div class="step"><div class="n">📤</div><b>3 · Export</b><p>Save, or export for TikTok, Reels, Shorts, LinkedIn and more — all at once.</p></div>
+<h2 id="features">Everything automatic. Tweak only if you want.</h2><p class="sub">The same tools the paid apps charge for, free.</p>
+<div class="grid">
+ <div class="card"><b>Long to shorts</b><span>Finds the strongest moments and gives each clip a virality score with the reason.</span></div>
+ <div class="card"><b>AI captions</b><span>Word-by-word animated captions with keyword colours and emoji.</span></div>
+ <div class="card"><b>Hook titles</b><span>An on-screen hook for the first seconds, so clips work with the sound off.</span></div>
+ <div class="card"><b>AI reframe</b><span>Keeps the speaker in frame for 9:16, 1:1 and 16:9, or uses a clean blur-fit.</span></div>
+ <div class="card"><b>No dead air</b><span>Removes "um", "uh" and silences automatically.</span></div>
+ <div class="card"><b>Edit by text</b><span>Fix a caption word or cut a sentence and re-render.</span></div>
+ <div class="card"><b>19 platform exports</b><span>TikTok, Reels, Shorts, LinkedIn and more with the right size and length.</span></div>
+ <div class="card"><span class="tag">Ultra Pro</span><b>Agent mode (MCP)</b><span>Let AI agents find, render and caption clips for you.</span></div>
 </div>
 
-<h2>Everything auto. Tweak only if you want.</h2>
-<div class="feat">
- <div>🔥 Virality score<span>Know which clip to post first — and why.</span></div>
- <div>🪝 Hook titles<span>Work even with the sound off.</span></div>
- <div>🌈 Pop captions<span>Word-by-word, keyword colours, emoji.</span></div>
- <div>🙂 Smart framing<span>Follows the face, or a clean blur-fit.</span></div>
- <div>🤐 No “um”<span>Fillers and dead air cut out.</span></div>
- <div>🎨 Your brand<span>Fonts, colours, logo, intro, music.</span></div>
- <div>📐 19 platforms<span>Right size, length and safe zones.</span></div>
- <div>🎬 Pro export<span>Premiere / Resolve / Final Cut XML.</span></div>
+<h2 id="pricing">Pricing</h2><p class="sub">Start free. Upgrade when you want agents doing the work.</p>
+<div class="plans">
+ <div class="plan"><b style="font-size:20px">Free</b><div class="price">$0</div><ul><li>Long video to shorts, links or uploads</li><li>AI captions, hook titles, keyword colours</li><li>AI reframe, B-roll, filler and silence removal</li><li>Edit by text, platform export, no watermark</li></ul></div>
+ <div class="plan hi"><b style="font-size:20px">Ultra Pro</b><div><span class="price">$3.99</span><span style="color:var(--mu)"> / month</span></div><ul><li>MCP agent access</li><li>More credits and priority rendering</li><li>No watermark, ever, 4K export</li><li>Batch import and auto-posting (coming soon)</li></ul></div>
 </div>
 
-<div class="cta"><div><h3>Turn clipping into income 💸</h3><p>Learn the full AI-agent workflow for clippers & marketers.</p></div>
- <div class="row"><a class="pill" href="https://whop.com/ai-agents-for-clippers-marketers/">🎓 Join the course</a><a class="pill d" href="https://discord.gg/uFBkExYq94">💬 Join Discord</a></div></div>
-
-<div class="note">Android app: open AI AGENT CUT on your PC, tap 📱 Phone, and type the address into the app (same Wi-Fi). Windows may show
-“Windows protected your PC” for new apps — click <b>More info → Run anyway</b>. Android: allow “Install unknown apps” for your browser.
-Videos are processed on your own device. Open-source components listed in LICENSE-NOTICES.txt.</div>
+<h2>Join the community</h2><p class="sub">Clipping tips, new features and paid clipping campaigns.</p>
+<div class="social">
+ <a class="soc" style="background:#0f1a10;border-color:#1f3d24" href="https://whatsapp.com/channel/0029Vb8kbatJZg46tt9bzX32" target="_blank" rel="noopener"><i style="background:#25D366"><svg width="24" height="24" viewBox="0 0 24 24"><path fill="#fff" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.1.1.3 0 .5l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.1 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg></i><div><b>Join the AI AGENT CUT WhatsApp channel</b><span>Tips, updates and campaigns</span></div><em>Join</em></a>
+ <a class="soc" style="background:#0d1620;border-color:#1d3a52" href="https://t.me/+WgRI-35NCh1iNTFk" target="_blank" rel="noopener"><i style="background:#229ED9"><svg width="22" height="22" viewBox="0 0 24 24"><path fill="#fff" d="M21.5 3.6 2.9 10.8c-1.3.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.4.8.8.8s.6-.2.9-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.6c.3-1.3-.5-1.9-1.4-1.5zM9.6 14.5l-.4 3.9-1.4-4.6 9.9-6.3z"/></svg></i><div><b>Join on Telegram</b><span>Same tips in our Telegram group</span></div><em>Join</em></a>
 </div>
-<script>
-// Download links point at the latest GitHub Release of this repo (works on <owner>.github.io/ai-agent-cut).
-const owner=location.hostname.endsWith('github.io')?location.hostname.split('.')[0]:null;
-const base=owner?`https://github.com/${owner}/ai-agent-cut/releases/latest/download/`:'../dist/';
-document.getElementById('win').href=base+'AIAgentCut-Setup.exe';document.getElementById('apk').href=base+'AIAgentCut.apk';
-</script></body></html>
+
+<h2>About</h2>
+<div class="founder"><div class="ini" aria-hidden="true">WD</div><div style="flex:1;min-width:240px"><div class="lbl">Built by</div><b style="font-size:22px;display:block;margin-top:6px">Wisdom Daniel</b><div style="color:var(--mu);margin-top:2px">Founded by Wisdom Daniel — Founder &amp; CEO, AI Agent Cut</div></div>
+ <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn" style="padding:11px 16px;font-size:14px" href="https://x.com/WisdomD64553" target="_blank" rel="noopener">X</a><a class="btn dark" style="padding:11px 16px;font-size:14px" href="https://www.linkedin.com/in/wisdom-daniel-a2002a2b4/" target="_blank" rel="noopener">LinkedIn</a></div></div>
+
+<footer>The Android app connects to AI Agent Cut on your PC (same Wi-Fi): open the PC app, copy its address and paste it in Profile → Clipping server.<br>
+Videos are processed on your own device. Open source under the MIT license; third-party licenses in <a href="https://github.com/wisdomdaniel5544-ops/ai-agent-cut/blob/main/THIRD_PARTY_LICENSES.md">THIRD_PARTY_LICENSES.md</a>.<br>© 2026 AI Agent Cut</footer>
+</div></body></html>

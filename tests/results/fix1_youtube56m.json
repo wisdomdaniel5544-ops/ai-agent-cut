@@ -1,0 +1,21 @@
+{
+ "label": "fix1_youtube56m",
+ "src": "https://www.youtube.com/watch?v=oopwD8yoYqQ",
+ "steps": [
+  {
+   "step": "fetching",
+   "secs": 20.0
+  },
+  {
+   "step": "cutting silences",
+   "secs": 23.1
+  }
+ ],
+ "errors": [
+  "job error: ,3289.385,3292.412)+between(t,3293.443,3310.203)+between(t,3311.267,3312.866)+between(t,3314.764,3318.660)+between(t,3319.350,3321.471)+between(t,3322.208,3342.380)+between(t,3342.949,3346.476)+between(t,3347.311,3349.057)+between(t,3349.595,3353.044)+between(t,3354.484,3356.744)+between(t,3357.255,3360.422)'\n[AVFilterGraph @ 0x556f9046e9c0] Error initializing filters\nError opening output file /workspace/ai-agent-cut/jobs/d9e9206d/work/cut.mp4.\nError opening output files: Cannot allocate memory\n"
+ ],
+ "job": "d9e9206d",
+ "total_job_secs": 43.1,
+ "clips": [],
+ "wall_secs": 43.1
+}

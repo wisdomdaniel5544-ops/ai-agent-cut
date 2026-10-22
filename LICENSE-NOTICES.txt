@@ -1,0 +1,13 @@
+AI Agent Cut is MIT-licensed (see LICENSE). Full third-party list: THIRD_PARTY_LICENSES.md
+(https://github.com/wisdomdaniel5544-ops/ai-agent-cut/blob/main/THIRD_PARTY_LICENSES.md)
+
+Bundled executables:
+- FFmpeg / ffprobe (Windows build by BtbN, "win64-gpl", includes libx264 and libass) — GPL-2.0-or-later.
+  Runs as a separate program. Corresponding source: https://github.com/BtbN/FFmpeg-Builds (build scripts) and
+  https://ffmpeg.org/download.html#get-sources (FFmpeg source). Written offer: the exact source used for a
+  release is available on request via the project's GitHub issues for at least 3 years.
+- CPython 3.12 embeddable — PSF License 2.0.
+Models: Whisper (MIT, OpenAI; CTranslate2 conversion by Systran, MIT), YuNet face detector (MIT).
+Python packages: faster-whisper, ctranslate2, onnxruntime, fastapi, pydantic, mcp (MIT); numpy, starlette,
+uvicorn, av (BSD-3); opencv-python-headless, tokenizers, huggingface_hub, python-multipart (Apache-2.0);
+Pillow (MIT-CMU); yt-dlp (Unlicense).

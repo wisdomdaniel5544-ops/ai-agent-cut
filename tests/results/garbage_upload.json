@@ -1,0 +1,22 @@
+{
+ "label": "garbage_upload",
+ "src": "/workspace/garbage.mp4",
+ "steps": [
+  {
+   "step": "upload",
+   "secs": 0.0,
+   "mb": 2.0
+  },
+  {
+   "step": "fetching",
+   "secs": 1.0
+  }
+ ],
+ "errors": [
+  "job error: 76/file_garbage.mp4 -map 0:v:0 -map 0:a:0? -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart /workspace/ai-agent-cut/jobs/c28c2d55/work/decodable.mp4\n[mov,mp4,m4a,3gp,3g2,mj2 @ 0x5603222e9200] moov atom not found\n[in#0 @ 0x5603222e8f40] Error opening input: Invalid data found when processing input\nError opening input file /workspace/ai-agent-cut/uploads/9f56fcc56076/file_garbage.mp4.\nError opening input files: Invalid data found when processing input\n"
+ ],
+ "job": "c28c2d55",
+ "total_job_secs": 1.0,
+ "clips": [],
+ "wall_secs": 1.0
+}

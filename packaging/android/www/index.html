@@ -1,29 +1,347 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>AI AGENT CUT</title><style>
-:root{--ink:#0E0F13;--card:#181A21;--lime:#C6FF3D;--violet:#7B61FF;--coral:#FF5A5F;--soft:#9AA0AE}
-*{box-sizing:border-box}body{margin:0;background:var(--ink);color:#fff;font-family:system-ui,Roboto,sans-serif;padding:28px 18px;min-height:100vh}
-.logo{font-weight:900;font-size:26px}.logo i{font-style:normal;color:var(--coral)}.logo b{color:var(--lime);text-shadow:0 0 14px #c6ff3d80}
-.tag{color:var(--soft);margin:4px 0 22px}img{width:96px;display:block;margin:10px 0 18px}
-.card{background:var(--card);border-radius:22px;padding:18px;margin-bottom:14px}
-.step{display:flex;gap:12px;align-items:center;margin:10px 0;font-size:16px}.n{background:var(--violet);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-weight:900;flex:none}
-input{width:100%;font-size:17px;padding:16px;border-radius:16px;border:0;background:#232633;color:#fff;margin-top:8px}
-button{width:100%;margin-top:14px;font-size:20px;font-weight:900;padding:18px;border:0;border-radius:18px;background:var(--lime);color:var(--ink);box-shadow:0 8px 30px #c6ff3d50}
-.err{color:var(--coral);font-weight:700;margin-top:10px;min-height:20px}.small{color:var(--soft);font-size:13px;margin-top:10px}
-</style></head><body>
-<img src="icon.svg" alt=""><div class="logo">AI AGENT<i>✚</i><b>CUT</b></div><div class="tag">Long video in. Viral clips out.</div>
-<div class="card">
- <div class="step"><span class="n">1</span>Open AI AGENT CUT on your PC (Windows app)</div>
- <div class="step"><span class="n">2</span>Click <b>📱 Phone</b> there and copy the address</div>
- <div class="step"><span class="n">3</span>Paste it here — same Wi-Fi</div>
- <input id="srv" inputmode="url" placeholder="http://192.168.1.20:8765" autocomplete="off">
- <button onclick="connect()">🔌 Connect</button><div class="err" id="err"></div>
- <div class="small">Your videos are processed on your own computer (or your own server). Nothing is sent anywhere else.</div>
-</div>
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#000000"><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/static/icon.svg">
+<title>AI Agent Cut</title>
 <script>
-const s=localStorage.getItem('server');if(s){document.getElementById('srv').value=s}
-async function connect(){let u=document.getElementById('srv').value.trim();if(!u)return;if(!/^https?:\/\//.test(u))u='http://'+u;u=u.replace(/\/+$/,'');
- const e=document.getElementById('err');e.textContent='Connecting…';
- try{const ctl=new AbortController();setTimeout(()=>ctl.abort(),6000);const r=await fetch(u+'/api/presets',{signal:ctl.signal});if(!r.ok)throw 0;
-  localStorage.setItem('server',u);location.href=u+'/'}catch(_){e.textContent='😕 Can’t reach it. Same Wi-Fi? Is the PC app open with Phone access on?'}}
-if(s&&!sessionStorage.getItem('tried')){sessionStorage.setItem('tried',1);connect()}
+// Phone app (Capacitor) support: the UI is bundled in the APK, the clipping engine runs on your PC/server.
+// API_BASE is '' on the web (same origin) and the saved server address inside the app.
+const IN_APP=!!window.Capacitor||location.hostname==='localhost'&&!location.port;
+window.API_BASE=(localStorage.getItem('aac_server')||'').replace(/\/+$/,'');
+(function(){const f=window.fetch.bind(window);window.fetch=(u,o)=>f(typeof u==='string'&&/^\/(api|files|tplfiles)\//.test(u)?API_BASE+u:u,o)})();
+document.addEventListener('click',e=>{const a=e.target.closest('a[href^="/classic"]');if(a&&API_BASE){e.preventDefault();location.href=API_BASE+a.getAttribute('href')}},true);
+</script>
+
+<style>
+:root{--bg:#000;--c1:#121212;--c2:#1C1C1E;--c3:#2A2A2D;--tx:#fff;--mu:#A0A0A0;--ac:#C6FF3D;--line:#232325}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#000;color:#fff;font-family:Inter,"SF Pro Display",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font-family:inherit}a{color:inherit}
+h1,h2,h3{margin:0;font-weight:800;letter-spacing:-.02em}
+.mu{color:var(--mu)}.hide{display:none!important}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px;border-radius:14px;border:0;font-size:16px;font-weight:700;cursor:pointer;background:#fff;color:#000}
+.btn.dark{background:var(--c2);color:#fff;border:1px solid var(--c3)}.btn.sm{width:auto;padding:10px 16px;font-size:14px;border-radius:999px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:var(--c2);font-weight:700;font-size:13px;border:0;color:#fff;cursor:pointer}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--ac)}
+.ultra{background:var(--ac);color:#000}
+.mark{width:40px;height:40px;flex:none}
+.wm{font-weight:800;font-size:18px;letter-spacing:-.02em}.wm b{color:var(--ac)}
+input.f{width:100%;padding:15px 16px;border-radius:14px;border:1px solid var(--c3);background:var(--c1);color:#fff;font-size:16px;outline:0}
+input.f:focus{border-color:#fff}
+/* intro */
+#intro{position:fixed;inset:0;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .5s}
+#intro.out{opacity:0;pointer-events:none}
+#intro svg{width:120px;height:120px}
+#intro .tri{transform-origin:256px 256px;animation:pop .7s cubic-bezier(.2,1.4,.4,1) both}
+#intro .cut{stroke-dasharray:340;stroke-dashoffset:340;animation:draw .45s .6s ease-out forwards}
+#intro .knot{transform-origin:410px 162px;transform:scale(0);animation:pop .35s 1s cubic-bezier(.2,1.6,.4,1) forwards}
+#intro .half{animation:slide .5s 1.05s ease-out forwards}
+#intro .wm{font-size:26px;opacity:0;transform:translateY(10px);animation:up .5s 1.25s forwards}
+@keyframes pop{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1)}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes slide{to{transform:translate(-10px,6px)}}
+@keyframes up{to{opacity:1;transform:none}}
+/* mobile screens */
+.scr{position:fixed;inset:0;display:flex;flex-direction:column;background:#000}
+#onb .track{flex:1;display:flex;transition:transform .45s cubic-bezier(.4,0,.2,1)}
+#onb .sl{min-width:100%;padding:56px 28px 0;display:flex;flex-direction:column}
+.art{flex:1;max-height:430px;border-radius:28px;background:var(--c1);margin-bottom:28px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.sl h1{font-size:32px;line-height:1.1}.sl p{font-size:16px;line-height:1.5;margin:12px 0 0}
+.dots{display:flex;gap:6px;justify-content:center;padding:22px}.dots i{width:8px;height:8px;border-radius:9px;background:var(--c3);transition:.3s}.dots i.on{width:24px;background:#fff}
+.foot{padding:0 28px 34px}
+.phone{width:150px;height:260px;border-radius:22px;background:#000;border:2px solid var(--c3);position:relative;overflow:hidden}
+.longv{position:absolute;left:24px;top:50%;width:120px;height:68px;margin-top:-34px;border-radius:12px;background:var(--c2);border:1px solid var(--c3)}
+.cap{position:absolute;left:0;right:0;bottom:60px;text-align:center;font-weight:900;font-size:20px;text-transform:uppercase}.cap span{color:var(--ac)}
+.price-big{font-size:64px;font-weight:900;letter-spacing:-.04em}
+/* sign in */
+#signin{padding:0 28px 34px;justify-content:space-between}
+#signin .top{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}
+#signin .mark{width:84px;height:84px}
+.small{font-size:12px;text-align:center;margin-top:14px;line-height:1.5}
+/* app shell */
+#app{display:none}#app.d{display:block}
+.mhead{position:sticky;top:0;z-index:3;background:#000;display:flex;align-items:center;justify-content:space-between;padding:16px 18px}
+.page{padding:0 18px 140px}
+.empty{margin-top:60px;text-align:center;padding:40px 20px;border-radius:24px;background:var(--c1)}
+.empty .ic{width:64px;height:64px;border-radius:20px;background:var(--c2);margin:0 auto 16px;display:flex;align-items:center;justify-content:center}
+.tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:5;display:flex;align-items:center;gap:26px;padding:10px 22px;border-radius:999px;background:rgba(28,28,30,.92);backdrop-filter:blur(14px);border:1px solid var(--c3)}
+.tabbar button{background:none;border:0;color:var(--mu);font-size:11px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.tabbar button.on{color:#fff}.tabbar svg{width:24px;height:24px}
+.fab{width:56px;height:56px;border-radius:50%;background:#fff!important;color:#000!important;justify-content:center}
+.fab svg{width:28px!important;height:28px!important}
+.proj{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
+.pc{background:var(--c1);border-radius:16px;overflow:hidden;cursor:pointer}.pc .th{aspect-ratio:9/12;background:var(--c2);display:flex;align-items:center;justify-content:center}.pc video{width:100%;height:100%;object-fit:cover}
+.pc .m{padding:10px 12px;font-size:13px}.pc .m b{display:block;font-size:14px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;opacity:0;pointer-events:none;transition:.25s}.backdrop.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--c1);border-radius:26px 26px 0 0;padding:10px 20px 34px;transform:translateY(105%);transition:transform .35s cubic-bezier(.3,1,.4,1);max-width:560px;margin:auto}
+.sheet{visibility:hidden}.sheet.on{transform:none;visibility:visible}.grab{width:40px;height:5px;border-radius:9px;background:var(--c3);margin:0 auto 18px}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.prow{display:flex;align-items:center;justify-content:space-between;padding:16px;border-radius:14px;background:var(--c2);margin-top:10px;font-weight:600}
+.plan{border-radius:22px;background:var(--c1);padding:22px;margin-top:14px;border:1px solid var(--c3)}.plan.hi{border-color:var(--ac)}
+.plan ul{list-style:none;padding:0;margin:16px 0}.plan li{padding:7px 0;display:flex;gap:10px;font-size:15px}.plan li:before{content:"";width:18px;height:18px;flex:none;border-radius:50%;background:var(--ac) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12l4 4 8-8' stroke='%23000' stroke-width='3' fill='none'/%3E%3C/svg%3E") center/12px no-repeat}
+.tag{font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--ac);color:#000;text-transform:uppercase;letter-spacing:.04em}
+.prog{height:8px;border-radius:9px;background:var(--c3);overflow:hidden;margin-top:12px}.prog i{display:block;height:100%;width:3%;background:var(--ac);transition:width .6s}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:12px 18px;border-radius:999px;font-weight:700;z-index:60;font-size:14px}
+.lrow{display:flex;gap:14px;overflow-x:auto;padding:14px 0 6px;scroll-snap-type:x mandatory}.lrow::-webkit-scrollbar{height:6px}.lrow::-webkit-scrollbar-thumb{background:#2A2A2D;border-radius:9px}
+.lv{flex:none;width:280px;scroll-snap-align:start;text-decoration:none;color:#fff}.lv img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:14px;background:#1C1C1E;display:block}
+.lv.s{width:150px}.lv.s img{aspect-ratio:9/16}.lv b{display:block;font-size:14px;font-weight:600;margin-top:8px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lv span{font-size:12px;color:#A0A0A0}.lhead h3{font-size:17px;margin-top:18px}
+#v-learn .lv{width:250px}#v-learn .lv.s{width:140px}
+.wa{display:flex;align-items:center;gap:14px;padding:16px;border-radius:18px;background:#0f1a10;border:1px solid #1f3d24;text-decoration:none;color:#fff;margin:14px 0}
+.wa .wi{width:44px;height:44px;border-radius:14px;background:#25D366;display:flex;align-items:center;justify-content:center;flex:none}
+.wa b{display:block;font-size:15px}.wa span{font-size:13px;color:#A0A0A0}.wa .go{margin-left:auto;background:#fff;color:#000;font-weight:700;font-size:13px;padding:9px 14px;border-radius:999px;white-space:nowrap}
+.lead{background:var(--c1);border:1px solid var(--c3);border-radius:18px;padding:18px;margin:14px 0}.lead .r{display:flex;gap:8px;margin-top:12px}.lead .r input{flex:1}.lead .r .btn{width:auto;padding:0 18px}
+.dan{display:flex;gap:16px;align-items:center;background:linear-gradient(135deg,#1C1C1E,#121212);border:1px solid var(--c3);border-radius:20px;padding:18px;margin-top:14px}
+.dan .yt{width:48px;height:48px;border-radius:14px;background:#FF0033;display:flex;align-items:center;justify-content:center;flex:none}
+@media(max-width:999px){.dan{flex-wrap:wrap}.dan>div:nth-child(2){flex:1 1 calc(100% - 64px)}.dan .btn{width:100%}}
+.social{display:grid;grid-template-columns:1fr;gap:10px;margin:14px 0}.social .wa{margin:0}.tg{background:#0d1620;border-color:#1d3a52}
+@media(min-width:1000px){.social{grid-template-columns:1fr 1fr}}
+.key{background:var(--c1);border:1px solid var(--c3);border-radius:18px;padding:16px;margin-top:12px}.key .h{display:flex;align-items:center;gap:10px}.key .h b{flex:1;font-size:16px}
+.key .r{display:flex;gap:8px;margin-top:12px}.key .r input{flex:1;font-size:14px}.key .r .btn{width:auto;padding:0 16px}.soon{background:var(--c3);color:#A0A0A0}.live{background:var(--ac);color:#000}
+.about{background:var(--c1);border:1px solid var(--c3);border-radius:22px;padding:24px;margin-top:16px}
+.about .lbl2{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#A0A0A0}
+.fd{display:flex;align-items:center;gap:16px;margin-top:16px}.fd .ini{width:64px;height:64px;border-radius:50%;flex:none;background:linear-gradient(135deg,#C6FF3D,#8BC34A);color:#000;font-weight:800;font-size:22px;display:flex;align-items:center;justify-content:center;letter-spacing:-.02em}
+.fd b{display:block;font-size:19px}.soc{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}.soc a{text-decoration:none}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.meta div{background:var(--c2);border-radius:14px;padding:12px 14px;font-size:13px}.meta b{display:block;font-size:14px;margin-top:2px}
+/* desktop */
+.side,.dtop{display:none}
+@media (min-width:1000px){
+ .mhead,.tabbar{display:none!important}
+ #app.d{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+ .side{display:flex;flex-direction:column;gap:4px;padding:22px 14px;border-right:1px solid var(--line);position:sticky;top:0;height:100vh}
+ .side .brand{display:flex;align-items:center;gap:10px;padding:0 10px 24px}
+ .side a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;color:var(--mu);text-decoration:none;font-weight:600;font-size:15px;cursor:pointer}
+ .side a.on,.side a:hover{background:var(--c2);color:#fff}.side svg{width:20px;height:20px}
+ .side .up{margin-top:auto;background:var(--c1);border-radius:16px;padding:16px;font-size:13px}
+ .dtop{display:flex;align-items:center;gap:12px;padding:16px 32px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#000;z-index:3}
+ .dtop .lk{flex:1;max-width:640px;display:flex;gap:8px;background:var(--c1);border:1px solid var(--c3);border-radius:14px;padding:6px 6px 6px 16px}
+ .dtop .lk input{flex:1;background:none;border:0;color:#fff;font-size:15px;outline:0}
+ .av{width:38px;height:38px;border-radius:50%;background:var(--ac);color:#000;font-weight:800;display:flex;align-items:center;justify-content:center}
+ .page{padding:32px 32px 60px;max-width:1200px}
+ .proj{grid-template-columns:repeat(5,1fr)}
+}
+.hero h1{font-size:34px}.srcs{display:flex;gap:10px;margin:18px 0 34px;flex-wrap:wrap}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.tool{background:var(--c1);border:1px solid var(--line);border-radius:18px;padding:18px;cursor:pointer;transition:.2s}.tool:hover{background:var(--c2);transform:translateY(-2px)}
+.tool .ti{width:40px;height:40px;border-radius:12px;background:var(--c2);display:flex;align-items:center;justify-content:center;margin-bottom:14px;color:var(--ac)}
+.tool b{display:block;font-size:15px}.tool span{font-size:13px;color:var(--mu)}
+.sec{display:flex;justify-content:space-between;align-items:center;margin:36px 0 4px}.sec h2{font-size:20px}
+.news{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}.news div{background:var(--c1);border-radius:18px;padding:18px;font-size:14px}.news b{display:block;font-size:16px;margin:8px 0 4px}
+.dskonly{display:none}@media(min-width:1000px){.dskonly{display:block}.mobonly{display:none!important}}
+</style></head><body>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="logo" viewBox="0 0 512 512"><rect width="512" height="512" rx="120" fill="#121212"/><path d="M176 132 L392 256 L176 380 Z" fill="#fff" stroke="#fff" stroke-width="28" stroke-linejoin="round"/><path d="M118 330 L410 162" stroke="#121212" stroke-width="44" stroke-linecap="round"/><path d="M118 330 L410 162" stroke="#C6FF3D" stroke-width="20" stroke-linecap="round"/><circle cx="410" cy="162" r="22" fill="#C6FF3D"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="i-brand" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1 0 2-1 1-2.5S13 16 15 16h2a4 4 0 0 0 4-4c0-5-4-9-9-9z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8" cy="11" r="1.5" fill="currentColor"/><circle cx="12" cy="7.5" r="1.5" fill="currentColor"/></symbol>
+<symbol id="i-set" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M12 16V4M6 10l6-6 6 6M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-img" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 16l5-5 5 5 3-3 5 5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z M14 3v5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z" fill="currentColor"/></symbol>
+<symbol id="i-cc" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 10.5a2 2 0 1 0 0 3M16 10.5a2 2 0 1 0 0 3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="i-cut" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="18" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 7.5 20 18M8.5 16.5 20 6" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="i-film" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 3v18M16 3v18M3 8h5M3 16h5M16 8h5M16 16h5" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="i-frame" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="i-wave" viewBox="0 0 24 24"><path d="M3 12h2M7 8v8M11 4v16M15 8v8M19 11v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-3-6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+<symbol id="i-drive" viewBox="0 0 24 24"><path d="M8 3h8l6 10-4 7H6l-4-7z M8 3l6 10h8 M2 13h12l4 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="currentColor"/></symbol>
+<symbol id="g" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h6.5a5.6 5.6 0 0 1-2.4 3.6v3h3.9c2.2-2.1 3.5-5.1 3.5-8.7z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.9-3c-1.1.7-2.5 1.2-4.1 1.2-3.1 0-5.8-2.1-6.7-5H1.3v3.1A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.3 14.3a7.2 7.2 0 0 1 0-4.6V6.6H1.3a12 12 0 0 0 0 10.8z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4A12 12 0 0 0 1.3 6.6l4 3.1c.9-2.8 3.6-4.9 6.7-4.9z"/></symbol>
+</defs></svg>
+
+<!-- launch intro -->
+<div id="intro"><svg viewBox="0 0 512 512"><rect width="512" height="512" rx="120" fill="#121212"/>
+<g class="tri"><g class="half"><path d="M176 132 L392 256 L176 380 Z" fill="#fff" stroke="#fff" stroke-width="28" stroke-linejoin="round"/></g></g>
+<path class="cut" d="M118 330 L410 162" stroke="#121212" stroke-width="44" stroke-linecap="round"/><path class="cut" d="M118 330 L410 162" stroke="#C6FF3D" stroke-width="20" stroke-linecap="round"/>
+<circle class="knot" cx="410" cy="162" r="22" fill="#C6FF3D"/></svg>
+<div class="wm">AI Agent <b>Cut</b></div></div>
+
+<!-- onboarding -->
+<div class="scr hide" id="onb">
+ <div style="display:flex;justify-content:flex-end;padding:16px 20px 0;position:absolute;right:0;z-index:2"><button class="pill" onclick="toSign()">Skip</button></div>
+ <div class="track" id="track">
+  <div class="sl"><div class="art"><div class="longv"></div><svg width="40" height="20" style="position:absolute;left:150px;color:#A0A0A0"><path d="M0 10h32M24 3l8 7-8 7" stroke="currentColor" stroke-width="2.5" fill="none"/></svg><div class="phone" style="margin-left:120px"><div style="position:absolute;inset:0;background:linear-gradient(#1C1C1E,#000)"></div><div class="cap" style="bottom:30px;font-size:15px">clip <span>01</span></div><span class="tag" style="position:absolute;top:12px;left:12px">Score 92</span></div></div>
+   <h1>One long video.<br>A week of shorts.</h1><p class="mu">Drop a podcast, stream or talk. Your agent finds the moments worth posting and cuts them for you.</p></div>
+  <div class="sl"><div class="art"><div class="phone" style="width:190px;height:330px"><div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 35%,#2A2A2D,#000 70%)"></div><div class="cap">nobody <span>tells you</span><br>this part</div></div></div>
+   <h1>Captions people<br>actually read.</h1><p class="mu">Word-by-word animated captions, keyword highlights and a hook title that works with the sound off.</p></div>
+  <div class="sl"><div class="art" style="flex-direction:column;gap:6px"><div class="price-big">$0</div><div class="mu" style="font-weight:600">No watermark. No card.</div><div class="tag" style="margin-top:12px">Everything included</div></div>
+   <h1>Start free.<br>Keep every clip.</h1><p class="mu">All editing tools are free. Go Ultra Pro for $3.99/mo when you want agents doing the work.</p></div>
+ </div>
+ <div class="dots" id="dots"><i class="on"></i><i></i><i></i></div>
+ <div class="foot"><button class="btn" id="nextBtn" onclick="next()">Next</button></div>
+</div>
+
+<!-- sign in -->
+<div class="scr hide" id="signin">
+ <div class="top"><svg class="mark"><use href="#logo"/></svg><h1 style="font-size:30px">AI Agent <span style="color:var(--ac)">Cut</span></h1><p class="mu" style="margin:0;font-size:16px">Long video in. Viral clips out.</p></div>
+ <div id="sbtns">
+  <button class="btn" onclick="login('google')"><svg width="20" height="20"><use href="#g"/></svg>Continue with Google</button>
+  <button class="btn dark" style="margin-top:12px" onclick="showEmail()"><svg width="20" height="20" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="#fff" stroke-width="2"/><path d="M3 7l9 6 9-6" fill="none" stroke="#fff" stroke-width="2"/></svg>Continue with email</button>
+ </div>
+ <div id="ebox" class="hide"><input class="f" id="email" type="email" placeholder="you@example.com"><button class="btn" style="margin-top:12px" onclick="login('email')">Continue</button><button class="btn dark" style="margin-top:10px" onclick="hideEmail()">Back</button></div>
+ <p class="small mu">Local sign-in on this device. By continuing you agree to the Terms and Privacy Policy.</p>
+</div>
+
+<!-- app -->
+<div id="app">
+ <nav class="side">
+  <div class="brand"><svg class="mark" style="width:34px;height:34px"><use href="#logo"/></svg><span class="wm">AI Agent <b>Cut</b></span></div>
+  <a class="on" data-v="home" onclick="go('home')"><svg><use href="#i-home"/></svg>Home</a>
+  <a data-v="projects" onclick="go('projects')"><svg><use href="#i-grid"/></svg>Projects</a>
+  <a href="/classic#brand"><svg><use href="#i-brand"/></svg>Brand templates</a>
+  <a data-v="learn" onclick="go('learn')"><svg><use href="#i-play"/></svg>Learn</a>
+  <a data-v="ai" onclick="go('ai')"><svg><use href="#i-spark"/></svg>Connect AI</a>
+  <a data-v="account" onclick="go('account')"><svg><use href="#i-set"/></svg>Settings</a>
+  <a data-v="about" onclick="go('about')" style="padding-left:44px;font-size:14px">About</a>
+  <div class="up"><b style="font-size:14px">Ultra Pro</b><div class="mu" style="margin:4px 0 12px">Let AI agents clip for you via MCP.</div><button class="btn sm" style="width:100%" onclick="go('pricing')">Upgrade · $3.99</button></div>
+ </nav>
+ <main>
+  <div class="dtop"><div class="lk"><svg width="20" height="20" style="color:#A0A0A0;align-self:center"><use href="#i-link"/></svg><input id="dlink" placeholder="Paste a YouTube, Drive or video link"><button class="btn sm" onclick="startLink('dlink')">Get clips</button></div>
+   <div style="flex:1"></div><span class="pill"><span class="dot"></span><span class="cred">60</span> credits</span><button class="pill ultra" onclick="go('pricing')">Upgrade</button><div class="av" id="av" onclick="go('account')" style="cursor:pointer">W</div></div>
+  <div class="mhead"><h2 id="mtitle" style="font-size:26px">Projects</h2><div style="display:flex;gap:8px"><span class="pill"><span class="dot"></span><span class="cred">60</span></span><button class="pill ultra" onclick="go('pricing')"><svg width="14" height="14"><use href="#i-spark"/></svg>Ultra Pro</button></div></div>
+
+  <section class="page" id="v-home">
+   <div class="dskonly hero"><h1>What are we clipping today?</h1>
+    <div class="srcs"><button class="btn sm" onclick="pick('video/*')"><svg width="18" height="18"><use href="#i-up"/></svg>Upload</button><button class="btn sm dark" onclick="toast('Google Drive: paste a shared Drive link in the bar above')"><svg width="18" height="18"><use href="#i-drive"/></svg>Google Drive</button><button class="btn sm dark" onclick="sample()"><svg width="18" height="18"><use href="#i-play"/></svg>Try a sample</button></div>
+    <div class="tools" id="tools"></div></div>
+   <div class="social"><a class="wa freeonly" href="https://whatsapp.com/channel/0029Vb8kbatJZg46tt9bzX32" target="_blank" rel="noopener"><div class="wi"><svg width="24" height="24" viewBox="0 0 24 24"><path fill="#fff" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.1.1.3 0 .5l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.1 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg></div><div><b>Join the AI AGENT CUT WhatsApp channel</b><span>Clipping tips, new features and campaigns.</span></div><span class="go">Join</span></a><a class="wa tg freeonly" href="https://t.me/+WgRI-35NCh1iNTFk" target="_blank" rel="noopener"><div class="wi" style="background:#229ED9"><svg width="22" height="22" viewBox="0 0 24 24"><path fill="#fff" d="M21.5 3.6 2.9 10.8c-1.3.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.4.8.8.8s.6-.2.9-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.6c.3-1.3-.5-1.9-1.4-1.5zM9.6 14.5l-.4 3.9-1.4-4.6 9.9-6.3z"/></svg></div><div><b>Join on Telegram</b><span>Same tips and updates in our Telegram group.</span></div><span class="go">Join</span></a></div>
+   <div id="jobbox" class="plan hide"><b id="jtitle">Making your clips</b><div class="mu" id="jmsg" style="margin-top:6px;font-size:14px">Starting…</div><div class="prog"><i id="jbar"></i></div></div>
+   <div class="sec dskonly"><h2>Your projects</h2><a class="mu" style="cursor:pointer" onclick="go('projects')">See all</a></div>
+   <div id="plist"></div>
+   <div class="dskonly"><div class="sec"><h2>Learn: make money clipping</h2><a class="mu" style="cursor:pointer" onclick="go('learn')">Open</a></div><div class="learnbox"><div class="dan"><div class="yt"><svg width="22" height="22"><use href="#i-play"/></svg></div><div style="flex:1"><b style="font-size:16px">Learn to make money clipping from Daniel Bitton</b><div class="mu" style="font-size:13px;margin-top:4px">Daniel Bitton runs Content Rewards, where creators get paid per view for clips. Start with his videos below.</div></div><a class="btn sm" href="https://www.youtube.com/channel/UCAEH3xSfx8n_m6UOykxXXJQ" target="_blank" rel="noopener" style="text-decoration:none">YouTube channel</a></div><div class="lhead"><h3>Long videos</h3></div><div class="lrow" data-k="long"></div><div class="lhead"><h3>Shorts</h3></div><div class="lrow" data-k="short"></div><p class="small mu" style="text-align:left">Videos by Daniel Bitton on YouTube. They open on YouTube; nothing is downloaded or re-hosted.</p></div><div class="sec"><h2>What's new</h2></div><div class="news">
+    <div><span class="tag">New</span><b>Agent mode (MCP)</b><span class="mu">Ask your AI assistant to find, render and caption clips end to end.</span></div>
+    <div><span class="tag">New</span><b>Platform export</b><span class="mu">One-tap packs for TikTok, Reels and Shorts with safe zones.</span></div>
+    <div><span class="tag">Free</span><b>Everything unlocked</b><span class="mu">All former Pro editing tools now come with the free plan.</span></div></div></div>
+  </section>
+
+  <section class="page hide" id="v-projects"><h1 class="dskonly" style="font-size:30px;margin-bottom:8px">Projects</h1><div id="plist2"></div></section>
+
+  <section class="page hide" id="v-learn"><h1 class="dskonly" style="font-size:28px;margin-top:4px">Learn</h1><div class="social"><a class="wa freeonly" href="https://whatsapp.com/channel/0029Vb8kbatJZg46tt9bzX32" target="_blank" rel="noopener"><div class="wi"><svg width="24" height="24" viewBox="0 0 24 24"><path fill="#fff" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.1.1.3 0 .5l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.1 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg></div><div><b>Join the AI AGENT CUT WhatsApp channel</b><span>Clipping tips, new features and campaigns.</span></div><span class="go">Join</span></a><a class="wa tg freeonly" href="https://t.me/+WgRI-35NCh1iNTFk" target="_blank" rel="noopener"><div class="wi" style="background:#229ED9"><svg width="22" height="22" viewBox="0 0 24 24"><path fill="#fff" d="M21.5 3.6 2.9 10.8c-1.3.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.4.8.8.8s.6-.2.9-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.6c.3-1.3-.5-1.9-1.4-1.5zM9.6 14.5l-.4 3.9-1.4-4.6 9.9-6.3z"/></svg></div><div><b>Join on Telegram</b><span>Same tips and updates in our Telegram group.</span></div><span class="go">Join</span></a></div><div class="learnbox"><div class="dan"><div class="yt"><svg width="22" height="22"><use href="#i-play"/></svg></div><div style="flex:1"><b style="font-size:16px">Learn to make money clipping from Daniel Bitton</b><div class="mu" style="font-size:13px;margin-top:4px">Daniel Bitton runs Content Rewards, where creators get paid per view for clips. Start with his videos below.</div></div><a class="btn sm" href="https://www.youtube.com/channel/UCAEH3xSfx8n_m6UOykxXXJQ" target="_blank" rel="noopener" style="text-decoration:none">YouTube channel</a></div><div class="lhead"><h3>Long videos</h3></div><div class="lrow" data-k="long"></div><div class="lhead"><h3>Shorts</h3></div><div class="lrow" data-k="short"></div><p class="small mu" style="text-align:left">Videos by Daniel Bitton on YouTube. They open on YouTube; nothing is downloaded or re-hosted.</p></div><div class="lead leadbox"><b style="font-size:16px">Get free clipping tips</b><div class="mu" style="font-size:13px;margin-top:4px">Optional. We'll email you tips on making money with clips. Unsubscribe anytime.</div><div class="r"><input class="f" type="email" placeholder="you@example.com"><button class="btn" onclick="saveLead(this,'learn')">Send me tips</button></div></div></section>
+    <section class="page hide" id="v-ai"><h1 class="dskonly" style="font-size:28px">Connect AI</h1><p class="mu" style="margin:6px 0 0;font-size:14px">Use your own API keys. Keys stay on this device: Gemini is saved on this computer's local server, the others only in this browser.</p><div id="keys" style="max-width:720px"></div></section>
+  <section class="page hide" id="v-about"><h1 class="dskonly" style="font-size:28px">About</h1>
+ <div style="max-width:720px"><div class="about" style="display:flex;align-items:center;gap:16px"><svg style="width:56px;height:56px;flex:none"><use href="#logo"/></svg><div><b style="font-size:20px">AI Agent <span style="color:var(--ac)">Cut</span></b><div class="mu" style="font-size:14px;margin-top:2px">Long video in. Viral clips out.</div></div></div>
+ <div class="about"><div class="lbl2">Built by</div><div class="fd"><div class="ini" aria-hidden="true">WD</div><div><b>Wisdom Daniel</b><span class="mu" style="font-size:14px">Founder &amp; CEO, AI Agent Cut</span></div></div>
+ <p class="mu" style="font-size:14px;line-height:1.55;margin:16px 0 0">Founded by Wisdom Daniel — Founder &amp; CEO, AI Agent Cut</p>
+ <div class="soc"><a class="btn sm" href="https://x.com/WisdomD64553" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4zm-1.2 18h1.9L7.1 4H5.1z"/></svg>X</a><a class="btn sm dark" href="https://www.linkedin.com/in/wisdom-daniel-a2002a2b4/" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 24 24"><path fill="#fff" d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zm7 0h3.8v1.7h.1c.5-1 1.8-2 3.8-2 4 0 4.8 2.7 4.8 6.1V21h-4v-5.5c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V21h-4z"/></svg>LinkedIn</a><a class="btn sm dark contact" href="#">Contact</a></div></div>
+ <div class="meta"><div><span class="mu">Version</span><b>3.0</b></div><div><span class="mu">Contact</span><b class="contactTxt"></b></div></div>
+ <p class="small mu" style="text-align:left;margin-top:18px">© 2026 AI Agent Cut. All rights reserved.</p></div></section>
+  <section class="page hide" id="v-pricing">
+   <h1 style="font-size:30px;margin-top:4px">Pick your plan</h1><p class="mu" style="margin:8px 0 0">Every editing tool is free. Ultra Pro adds agents and speed.</p>
+   <div style="display:grid;gap:0 14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+   <div class="plan"><div style="display:flex;justify-content:space-between"><h3 style="font-size:20px">Free</h3><span class="pill">Current</span></div><div class="price-big" style="font-size:44px;margin-top:8px">$0</div>
+    <ul><li>Long video to shorts, links or uploads</li><li>AI captions, hook titles, keyword colours</li><li>AI reframe, B-roll, auto SFX</li><li>Edit by text, platform export</li><li>60 credits / month</li></ul></div>
+   <div class="plan hi"><div style="display:flex;justify-content:space-between"><h3 style="font-size:20px">Ultra Pro</h3><span class="tag">Best value</span></div><div><span class="price-big" style="font-size:44px">$3.99</span><span class="mu"> / month</span></div>
+    <ul><li>MCP agent access: let AI agents clip for you</li><li>600 credits / month</li><li>Priority rendering queue</li><li>No watermark, ever, 4K export</li><li>Batch import and auto-posting (soon)</li></ul>
+    <button class="btn" onclick="toast('Checkout is not connected yet')">Get Ultra Pro</button></div></div>
+   <p class="small mu">Cancel anytime. Prices in USD.</p>
+  </section>
+
+  <section class="page hide" id="v-account">
+   <div style="display:flex;align-items:center;gap:14px;margin-top:6px"><div class="av" style="width:56px;height:56px;font-size:22px;background:var(--ac);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800" id="av2">W</div><div><b id="uname" style="font-size:18px"></b><div class="mu" style="font-size:14px" id="uprov"></div></div></div>
+   <div class="social"><a class="wa freeonly" href="https://whatsapp.com/channel/0029Vb8kbatJZg46tt9bzX32" target="_blank" rel="noopener"><div class="wi"><svg width="24" height="24" viewBox="0 0 24 24"><path fill="#fff" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.1.1.3 0 .5l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.1 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg></div><div><b>Join the AI AGENT CUT WhatsApp channel</b><span>Clipping tips, new features and campaigns.</span></div><span class="go">Join</span></a><a class="wa tg freeonly" href="https://t.me/+WgRI-35NCh1iNTFk" target="_blank" rel="noopener"><div class="wi" style="background:#229ED9"><svg width="22" height="22" viewBox="0 0 24 24"><path fill="#fff" d="M21.5 3.6 2.9 10.8c-1.3.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.4.8.8.8s.6-.2.9-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.6c.3-1.3-.5-1.9-1.4-1.5zM9.6 14.5l-.4 3.9-1.4-4.6 9.9-6.3z"/></svg></div><div><b>Join on Telegram</b><span>Same tips and updates in our Telegram group.</span></div><span class="go">Join</span></a></div><div class="prow" style="flex-wrap:wrap;gap:10px"><span>Clipping server<div class="mu" style="font-size:12px;font-weight:500">Phone app: your PC's address from the desktop app (same Wi-Fi)</div></span><div style="display:flex;gap:8px;width:100%"><input class="f" id="srvIn" placeholder="http://192.168.1.20:8765" style="padding:10px 12px;font-size:14px"><button class="btn sm" onclick="setServer()">Save</button></div></div>
+   <div class="prow">Plan<span class="mu">Free</span></div>
+   <div class="prow">Credits left<span class="mu cred">60</span></div>
+   <div class="prow" onclick="go('pricing')" style="cursor:pointer">Upgrade to Ultra Pro<span style="color:var(--ac)">$3.99/mo</span></div>
+   <div class="prow" onclick="go('ai')" style="cursor:pointer">Connect AI<span class="mu">›</span></div>
+   <a class="prow" href="/classic" style="text-decoration:none">Advanced editor<span class="mu">›</span></a>
+   <a class="prow" href="/classic#brand" style="text-decoration:none">Brand templates<span class="mu">›</span></a>
+   <div class="prow" onclick="replayIntro()" style="cursor:pointer">Replay intro<span class="mu">›</span></div>
+   <div class="prow" onclick="go('about')" style="cursor:pointer">About AI Agent Cut<span class="mu">›</span></div>
+   <div class="about"><div class="lbl2">Built by</div><div class="fd"><div class="ini" aria-hidden="true">WD</div><div><b>Wisdom Daniel</b><span class="mu" style="font-size:14px">Founder &amp; CEO, AI Agent Cut</span></div></div>
+ <p class="mu" style="font-size:14px;line-height:1.55;margin:16px 0 0">Founded by Wisdom Daniel — Founder &amp; CEO, AI Agent Cut</p>
+ <div class="soc"><a class="btn sm" href="https://x.com/WisdomD64553" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4zm-1.2 18h1.9L7.1 4H5.1z"/></svg>X</a><a class="btn sm dark" href="https://www.linkedin.com/in/wisdom-daniel-a2002a2b4/" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 24 24"><path fill="#fff" d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zm7 0h3.8v1.7h.1c.5-1 1.8-2 3.8-2 4 0 4.8 2.7 4.8 6.1V21h-4v-5.5c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V21h-4z"/></svg>LinkedIn</a><a class="btn sm dark contact" href="#">Contact</a></div></div>
+   <button class="btn dark" style="margin-top:20px" onclick="logout()">Sign out</button>
+  </section>
+ </main>
+ <div class="tabbar"><button data-v="home" class="on" onclick="go('home')"><svg><use href="#i-home"/></svg>Home</button><button data-v="learn" onclick="go('learn')"><svg><use href="#i-play"/></svg>Learn</button><button class="fab" onclick="openSheet()"><svg><use href="#i-plus"/></svg></button><button data-v="account" onclick="go('account')"><svg><use href="#i-user"/></svg>Profile</button></div>
+</div>
+
+<div class="backdrop" id="bd" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet"><div class="grab"></div><h2 style="font-size:22px">Add a video</h2><p class="mu" style="margin:6px 0 16px;font-size:14px">We'll find the best moments and cut them into shorts.</p>
+ <input class="f" id="mlink" placeholder="Paste a video link" type="url"><button class="btn" style="margin-top:12px" onclick="startLink('mlink')">Get clips</button>
+ <div class="mu" style="text-align:center;margin:16px 0;font-size:13px">or upload from</div>
+ <div class="row"><button class="btn dark" onclick="pick('video/*')"><svg width="20" height="20"><use href="#i-img"/></svg>Gallery</button><button class="btn dark" onclick="pick('')"><svg width="20" height="20"><use href="#i-file"/></svg>Files</button></div></div>
+<div class="sheet" id="leadSheet"><div class="grab"></div><h2 style="font-size:22px">You're in 🎉</h2><div class="leadbox" style="margin-top:6px"><b style="font-size:16px">Get free clipping tips</b><div class="mu" style="font-size:13px;margin-top:4px">Optional. We'll email you tips on making money with clips. Unsubscribe anytime.</div><div class="r"><input class="f" type="email" placeholder="you@example.com"><button class="btn" onclick="saveLead(this,'signup')">Send me tips</button></div></div><button class="btn dark" onclick="closeLead()">Skip for now</button></div>
+<input type="file" id="file" class="hide">
+
+<script>
+const $=id=>document.getElementById(id),LS=localStorage;
+const LEARN_LONG=[["ZMEFCbokVcY", "I Tested Every AI That Edits Videos For You"], ["Td9z9Y5oyIU", "I Copied A YouTube Channel That Makes $100k/Mo (it worked)"], ["vgdPz6L-oyQ", "How To Turn $10 Into $10,000 With YouTube Shorts"], ["EGW-4OXrA_M", "How to ACTUALLY Go Viral with YouTube Shorts"], ["i8TL7UFYkn4", "How To Earn $100,000 With YouTube Shorts"], ["Q4ipe16tBgE", "How To Make F**k-You Money With YouTube Shorts"], ["hHX-eflnWlc", "I Bought A Dead YouTube Channel And Ran It For 30 Days"], ["TuxmXCY2rOE", "I Spent 100 Days Reviving A Dead Youtube Channel"]],LEARN_SHORTS=[["wGMbZmson3o", "This is how much I am making"], ["zpyc87PXdfI", "Thanks YouTube shorts"], ["cQYHcJXjl5I", "You can do the same"], ["Ds9kNfuhNCY", "How much does my software company cost?"], ["RdwdDrbyNj8", "Hard work pays off"], ["4YCDRrvxh9s", "There is no excuse"], ["iP9DbWb_33s", "Anything is possible if you put the work in"], ["TmuN6dbEy0g", "Your life can change so fast if you put in the work..."]];
+const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+document.querySelectorAll('.lrow').forEach(r=>{const sh=r.dataset.k==='short';r.innerHTML=(sh?LEARN_SHORTS:LEARN_LONG).map(([id,t])=>`<a class="lv${sh?' s':''}" href="https://www.youtube.com/${sh?'shorts/':'watch?v='}${id}" target="_blank" rel="noopener"><img loading="lazy" src="https://i.ytimg.com/vi/${id}/${sh?'oardefault':'hqdefault'}.jpg" onerror="this.src='https://i.ytimg.com/vi/${id}/hqdefault.jpg'" alt=""><b>${esc(t)}</b><span>Daniel Bitton</span></a>`).join('')});
+// ---- config: set the public contact email here ----
+const CONTACT_EMAIL='hello@example.com'; // TODO: replace with the real address
+document.querySelectorAll('.contact').forEach(a=>a.href='mailto:'+CONTACT_EMAIL);document.querySelectorAll('.contactTxt').forEach(e=>e.textContent=CONTACT_EMAIL);
+async function setServer(){let u=$('srvIn').value.trim().replace(/\/+$/,'');if(u&&!/^https?:\/\//.test(u))u='http://'+u;
+ if(u){try{const c=new AbortController();setTimeout(()=>c.abort(),6000);const r=await fetch(u+'/api/presets',{signal:c.signal});if(!r.ok)throw 0}catch(e){return toast("Can't reach it. Same Wi-Fi? Is the PC app open?")}}
+ localStorage.setItem('aac_server',u);API_BASE=u;toast(u?'Connected':'Using this device');loadProjects()}
+setTimeout(()=>{if($('srvIn'))$('srvIn').value=localStorage.getItem('aac_server')||''},0);
+const AIS=[['gemini','Gemini','Finds viral moments and writes hook titles','#4C8DF6',1],['elevenlabs','ElevenLabs','Voiceover hooks','#fff',0],['grok','Grok','Hooks, titles and captions','#fff',0],['manus','Manus','Agent that runs whole clipping jobs','#fff',0]];
+async function renderKeys(){let st={};try{st=await(await fetch('/api/ai-keys')).json()}catch(e){}
+ $('keys').innerHTML=AIS.map(([id,n,d,c,w])=>{const saved=w?st[id]:(LS.getItem('aac_key_'+id)?'…'+LS.getItem('aac_key_'+id).slice(-4):'');return `<div class="key"><div class="h"><div style="width:36px;height:36px;border-radius:10px;background:var(--c2);display:flex;align-items:center;justify-content:center;font-weight:800;color:${c}">${n[0]}</div><b>${n}<div class="mu" style="font-size:13px;font-weight:500">${d}</div></b><span class="tag ${w?'live':'soon'}">${w?'Works now':'Coming soon'}</span></div>
+ <div class="r"><input class="f" type="password" id="k_${id}" placeholder="${saved?'Saved '+saved:'Paste your '+n+' API key'}" autocomplete="off"><button class="btn" onclick="saveKey('${id}',${w})">Save</button>${saved?`<button class="btn dark" onclick="saveKey('${id}',${w},1)">Remove</button>`:''}</div>${w?'':'<div class="mu" style="font-size:12px;margin-top:8px">Saved in this browser only. Not used by the app until this integration ships.</div>'}</div>`}).join('')}
+async function saveKey(id,w,rm){const v=rm?'':$('k_'+id).value.trim();if(!rm&&!v)return toast('Paste a key first');
+ if(w){const r=await fetch('/api/ai-keys',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:id,key:v})});if(!r.ok)return toast((await r.json()).error||'Could not save')}else rm?LS.removeItem('aac_key_'+id):LS.setItem('aac_key_'+id,v);
+ toast(rm?'Key removed':'Key saved on this device');renderKeys()}
+const TOOLS=[['Long to shorts','Find the viral moments','i-cut'],['AI captions','Animated, word by word','i-cc'],['AI B-roll','Auto cutaways','i-film'],['AI reframe','Keep the speaker centred','i-frame'],['Auto SFX','Whooshes and pops','i-wave'],['Voiceover hook','A spoken opener','i-mic'],['Edit video','Edit by editing text','i-edit'],['Platform export','TikTok, Reels, Shorts','i-send']];
+$('tools').innerHTML=TOOLS.map(t=>`<div class="tool" onclick="toolClick('${t[0]}')"><div class="ti"><svg width="22" height="22"><use href="#${t[2]}"/></svg></div><b>${t[0]}</b><span>${t[1]}</span></div>`).join('');
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
+function toolClick(n){if(n==='Edit video'||n==='Platform export')location.href=API_BASE+'/classic';else{toast(n+': add a video to start');pick('video/*')}}
+// intro -> route
+function route(){const u=JSON.parse(LS.getItem('aac_user')||'null');
+ ['onb','signin'].forEach(i=>$(i).classList.add('hide'));$('app').style.display='none';$('app').classList.remove('d');
+ if(!LS.getItem('aac_onb'))$('onb').classList.remove('hide');else if(!u)$('signin').classList.remove('hide');
+ else{$('app').style.display='';$('app').classList.add('d');const n=(u.email||'W')[0].toUpperCase();$('av').textContent=$('av2').textContent=n;$('uname').textContent=u.email;$('uprov').textContent='Signed in with '+u.provider+' (local)';document.querySelectorAll('.freeonly').forEach(e=>e.classList.toggle('hide',(u.plan||'free')!=='free'));loadProjects();go(location.hash.slice(1)||'home')}}
+function replayIntro(){const i=$('intro');i.classList.remove('out');const c=i.cloneNode(true);i.replaceWith(c);setTimeout(()=>c.classList.add('out'),2300)}
+const skip=new URLSearchParams(location.search).has('nointro');
+if(skip)$('intro').classList.add('out');else setTimeout(()=>$('intro').classList.add('out'),2300);
+// onboarding
+let si=0;function next(){if(si>=2)return toSign();slide(si+1)}
+function slide(i){si=i;$('track').style.transform=`translateX(-${i*100}%)`;[...$('dots').children].forEach((d,k)=>d.classList.toggle('on',k===i));$('nextBtn').textContent=i===2?'Get started':'Next'}
+let tx=0;$('track').addEventListener('touchstart',e=>tx=e.touches[0].clientX);$('track').addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-tx;if(d<-40&&si<2)slide(si+1);if(d>40&&si>0)slide(si-1)});
+function toSign(){LS.setItem('aac_onb','1');route()}
+function showEmail(){$('sbtns').classList.add('hide');$('ebox').classList.remove('hide');$('email').focus()}
+function hideEmail(){$('sbtns').classList.remove('hide');$('ebox').classList.add('hide')}
+async function login(p){let email=p==='email'?$('email').value.trim():'google-user@local';if(p==='email'&&!/.+@.+\..+/.test(email))return toast('Enter a valid email');
+ try{const r=await(await fetch('/api/auth/local',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,provider:p})})).json();LS.setItem('aac_user',JSON.stringify(r.user))}catch(e){LS.setItem('aac_user',JSON.stringify({email,provider:p,stub:true}))}
+ if(p==='google')toast('Google OAuth not configured: signed in locally');route();if(!LS.getItem('aac_lead_asked')){LS.setItem('aac_lead_asked','1');setTimeout(()=>{$('bd').classList.add('on');$('leadSheet').classList.add('on')},400)}}
+function closeLead(){$('bd').classList.remove('on');$('leadSheet').classList.remove('on')}
+async function saveLead(b,src){const i=b.parentNode.querySelector('input'),e=i.value.trim();if(!/.+@.+\..+/.test(e))return toast('Enter a valid email');b.disabled=true;
+ try{const r=await fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e,source:src})});if(!r.ok)throw 0;b.closest('.leadbox').innerHTML='<b>Thanks! Tips are on the way.</b><div class="mu" style="font-size:13px;margin-top:4px">Saved for '+esc(e)+'</div>'+(src==='signup'?'':'');LS.setItem('aac_lead',e);if(src==='signup')setTimeout(closeLead,1200)}catch(x){b.disabled=false;toast('Could not save, try again')}}
+function logout(){LS.removeItem('aac_user');location.hash='';route()}
+// nav
+function go(v){if(!['home','projects','learn','ai','about','pricing','account'].includes(v))v='home';['home','projects','learn','ai','about','pricing','account'].forEach(k=>$('v-'+k).classList.toggle('hide',k!==v));
+ document.querySelectorAll('[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));$('mtitle').textContent={home:'Projects',projects:'Projects',pricing:'Ultra Pro',learn:'Learn',ai:'Connect AI',about:'About',account:'Account'}[v];history.replaceState(null,'','#'+v);if(v==='ai')renderKeys();scrollTo(0,0)}
+function openSheet(){$('bd').classList.add('on');$('sheet').classList.add('on')}
+function closeSheet(){$('bd').classList.remove('on');$('sheet').classList.remove('on');closeLead()}
+// projects
+async function loadProjects(){let ps=[];try{ps=await(await fetch('/api/projects')).json()}catch(e){}
+ const html=ps.length?`<div class="proj">${ps.map(p=>`<div class="pc" onclick="location.href=API_BASE+'/classic#job=${p.id}'"><div class="th">${p.thumb?`<video src="${API_BASE}${p.thumb}#t=1" preload="metadata" muted></video>`:'<span class="mu">'+p.status+'</span>'}</div><div class="m"><b>${(p.title||p.id).replace(/</g,'&lt;')}</b><span class="mu">${p.clips} clips · ${new Date(p.mtime*1000).toLocaleDateString()}</span></div></div>`).join('')}</div>`
+ :`<div class="empty"><div class="ic"><svg width="28" height="28" style="color:var(--ac)"><use href="#i-film"/></svg></div><h3 style="font-size:20px">No projects yet</h3><p class="mu" style="margin:8px 0 20px">Paste a link or upload a long video to get your first clips.</p><button class="btn sm" style="margin:auto" onclick="innerWidth>=1000?pick('video/*'):openSheet()"><svg width="18" height="18"><use href="#i-plus"/></svg>Add a video</button></div>`;
+ $('plist').innerHTML=html;$('plist2').innerHTML=html}
+// jobs (wired to /api/uploads + /api/jobs)
+function pick(acc){const f=$('file');f.accept=acc;f.value='';f.onchange=()=>f.files[0]&&upload(f.files[0]);f.click()}
+async function upload(file){closeSheet();showJob('Uploading '+file.name);
+ const {id}=await(await fetch('/api/uploads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:file.name})})).json();
+ const CH=8<<20;for(let o=0;o<file.size;o+=CH){const r=await(await fetch(`/api/uploads/${id}?offset=${o}`,{method:'PUT',body:file.slice(o,o+CH)})).json();prog(Math.round(r.offset/file.size*15),`Uploading ${Math.round(r.offset/file.size*100)}%`)}
+ const fd=new FormData();fd.append('upload_id',id);startJob(fd)}
+function startLink(i){const u=$(i).value.trim();if(!u)return toast('Paste a video link first');closeSheet();showJob('Fetching your video');const fd=new FormData();fd.append('url',u);startJob(fd)}
+function sample(){toast('Sample: using a public demo talk');$('dlink').value='https://www.youtube.com/watch?v=arj7oStGLkU';startLink('dlink')}
+async function startJob(fd){go('home');let r,j;try{r=await fetch('/api/jobs',{method:'POST',body:fd});j=await r.json()}catch(e){return prog(0,IN_APP&&!API_BASE?'Connect your PC first: Profile > Clipping server.':"Can't reach the clipping server. Is it running?")}if(!r.ok)return prog(0,j.error||'Something went wrong');poll(j.id)}
+function showJob(t){$('jobbox').classList.remove('hide');$('jtitle').textContent=t;prog(2,'Starting…')}
+function prog(p,m){$('jbar').style.width=p+'%';$('jmsg').textContent=m}
+async function poll(id,fails=0){let j;try{j=await(await fetch('/api/jobs/'+id)).json()}catch(e){if(fails<20){prog(+($('jbar').style.width.replace('%',''))||2,'Connection lost, retrying…');return setTimeout(()=>poll(id,fails+1),3000)}return prog(0,'Lost connection to the server. Your job keeps running there; reopen Projects later.')}const last=(j.log||[]).slice(-1)[0]||'';$('jtitle').textContent='Making your clips';
+ const t=last.match(/transcribing (\d+)%/),m=last.match(/rendering clip (\d+)\/(\d+)/);
+ prog(j.progress||5,m?`Cutting clip ${m[1]} of ${m[2]}`:t?`Listening ${t[1]}%`:(last.slice(0,80)||'Working…'));
+ if(j.status==='running')return setTimeout(()=>poll(id),1500);
+ if(j.status==='error')return prog(0,'Failed: '+(j.error||last).slice(0,200));
+ prog(100,'Done! Opening your clips…');loadProjects();setTimeout(()=>location.href=API_BASE+'/classic#job='+id,900)}
+if(!IN_APP&&'serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+route();
 </script></body></html>

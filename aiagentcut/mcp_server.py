@@ -45,7 +45,7 @@ def find_clips(source: str, n: int = 4, min_len: float = 30, max_len: float = 60
     """Transcribe a video (local path or URL) and return the best clip windows with virality 0-100, reason and hook title.
     Does not render. Returns a project id for render_clip."""
     pid = uuid.uuid4().hex[:8]; d = PROJECTS / pid; work = d / "work"; work.mkdir(parents=True)
-    media = engine.fetch(source, work); cut = work / "cut.mp4"; engine.silence_cut(media, cut)
+    cut = engine.ensure_decodable(engine.fetch(source, work), work)  # VAD in transcribe() skips silence
     tr = engine.transcribe(cut, model); (work / "transcript.json").write_text(json.dumps(tr))
     clips = engine.pick_clips(tr, cut, n, min_len, max_len, genre=genre, prompt=prompt)
     (d / "candidates.json").write_text(json.dumps({"input": source, "media": str(cut), "clips": clips}))

@@ -1,0 +1,21 @@
+{
+ "label": "bad_link",
+ "src": "https://www.youtube.com/watch?v=xxxxxxxxxxx",
+ "steps": [
+  {
+   "step": "fetching",
+   "secs": 1.0
+  },
+  {
+   "step": "download",
+   "secs": 3.0
+  }
+ ],
+ "errors": [
+  "job error: Couldn't download that link. Check it opens in a browser, or upload the file. (ERROR: [youtube] xxxxxxxxxxx: This video is unavailable)"
+ ],
+ "job": "94fdc8a6",
+ "total_job_secs": 4.0,
+ "clips": [],
+ "wall_secs": 4.0
+}

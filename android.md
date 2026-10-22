@@ -1,7 +1,11 @@
-# Android plan — AI AGENT ✚ CUT
+# Android plan — AI Agent Cut
 
-UX is identical to the mobile web app (`web/index.html`): 3 steps (Add → Clip → Export), one big thumb button,
-chips not dropdowns, defaults that need no settings, inline previews, share-sheet export.
+UX is identical to the v3 mobile web app (`web/index.html`): black UI with a lime accent, logo intro on launch,
+3 onboarding slides, Google / email sign-in, Projects home with a floating bar (Home · Learn · + · Profile), a bottom sheet
+to paste a link or pick from Gallery / Files, Learn, Connect AI, pricing (Free / Ultra Pro $3.99) and account screens.
+Launcher icons (`packaging/android/android/app/src/main/res/mipmap-*/ic_launcher*.png`) are regenerated from
+`web/static/icon.svg`; adaptive-icon background is `#000000`. Copy the new `web/` into `packaging/android/www` and
+rebuild the APK to ship them (not done yet).
 
 ## Phase 1 (fastest, recommended): PWA + Trusted Web Activity
 - The web UI is already mobile-first and installable: `web/manifest.webmanifest`, `web/sw.js`, `web/static/icon*.{svg,png}`.

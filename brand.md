@@ -1,4 +1,4 @@
-# Brand — AI AGENT ✚ CUT
+# Brand — AI Agent Cut (v3)
 
 What we learned from how the market leader markets itself (public tutorial video + site, studied, not copied):
 one-promise headline ("long video → viral shorts in 1 click"), a number on every clip (virality score) that makes
@@ -7,40 +7,49 @@ and a creator-to-creator tone ("you want this on, because people watch without s
 and build our own identity around **agents** and **ownership** (runs locally, no watermark, agent-drivable).
 
 ## Name & wordmark
-**AI AGENT ✚ CUT** — written `AI AGENT` (white) + `✚` (coral) + `CUT` (lime). Short name / app icon label: **AgentCut**.
-The ✚ reads as "agent *plus* cut" and doubles as a cut mark. Never use other brands' marks, names or colours.
+**AI Agent Cut** — set in a bold Inter-style sans: `AI Agent` (white) + `Cut` (lime #C6FF3D). Short name / app icon label: **AgentCut**.
+Older materials used `AI AGENT ✚ CUT` with a coral ✚; that wordmark is retired. Never use other brands' marks, names or colours.
 
 ## Tagline
 - Primary: **Long video in. Viral clips out.**
 - Alt: *Your clipping agent. Free, no watermark.* · *Clip like a pro. Let the agent do the boring part.*
 
-## Colours (playful but clean, high-contrast for small screens)
+## Colours (v3: strict dark mode, one accent)
 | Role | Hex |
 |---|---|
-| Ink (background) | `#0E0F13` |
-| Card | `#181A21` |
-| Lime (primary action, scores) | `#C6FF3D` |
-| Violet (selected / gradients) | `#7B61FF` |
-| Coral (✚, alerts, accents) | `#FF5A5F` |
-| Soft grey text | `#9AA0AE` |
+| Background | `#000000` |
+| Card / raised card | `#121212` / `#1C1C1E` (borders `#2A2A2D`) |
+| Primary text | `#FFFFFF` |
+| Secondary text | `#A0A0A0` |
+| Primary button | white `#FFFFFF` with black text |
+| Accent (only one: credits dot, Ultra Pro, scores, logo cut) | lime `#C6FF3D` |
 
-Type: system UI for the app (fast, native feel); Anton / Montserrat ExtraBold for captions & promo titles (OFL fonts).
+Violet and coral from v1/v2 are retired. Type: Inter / SF / system sans, 800 weight for headers; Anton / Montserrat
+ExtraBold stay for burned-in captions.
 
-## Logo idea
-A friendly rounded robot head (violet) with two lime "eye" dots and a coral antenna, sitting above a pair of lime
-scissor blades crossing into an ✚. Works at 48 px. File: `web/static/icon.svg` (+ `icon-512.png`).
+## Logo (v3)
+A white rounded **play triangle sliced by a lime diagonal cut line** ending in a lime dot (the "agent" handle),
+on a black/#121212 rounded square. It says "video" + "cut" + "automated" in one shape and reads at 16 px.
+Files: `web/static/icon.svg` (master), `icon-192.png`, `icon-512.png`, Android `mipmap-*/ic_launcher*.png`,
+Windows `packaging/windows/app.ico` (all regenerated from the SVG). Old robot mark kept as `web/static/icon-v2-old.svg`.
+**Launch intro:** triangle pops in, the cut line draws across, the dot snaps on, the wordmark rises (≈2.3 s, CSS/SVG
+in `web/index.html`; recording at `samples/v3/logo_intro.mp4`).
 
 ## Voice
 Short, warm, emoji-light, zero jargon. Verbs first: *Add. Clip. Export.* Celebrate results ("🔥 86 — strong hook").
 Never shame the user; errors say what to do next.
 
-## UX principles (applied in `web/index.html`)
-1. **3 steps only**: ① Add (tap to pick / paste link) → ② Clip (one progress bar with plain words) → ③ Export (Save / Edit).
-2. **One giant button** at thumb height. Everything else optional, hidden under "⚙️ More".
-3. **Sensible defaults**: 9:16, 3 clips, Bold style, hook title + keyword colours + um/uh removal ON. Zero settings needed.
-4. **Icons + 1–2 words** on every control; big chips (≥44 px) instead of dropdowns.
-5. **Instant preview**: clips play inline, sorted by score, with a one-line "why".
-6. Edit = type over the words, tap 🔁 Update.
+## UX (v3, `web/index.html`)
+- **Mobile:** launch intro → 3 onboarding slides (long video → shorts / captions people read / start free) → sign-in
+  (Continue with Google / Continue with email) → optional "Get free clipping tips" email → **Projects** home with credits
+  pill + Ultra Pro button, floating bar (Home · Learn · **+** · Profile). **+** opens a bottom sheet: paste a link, or Gallery / Files.
+- **Desktop:** left sidebar (Home, Projects, Brand templates, Learn, Connect AI, Settings), top bar (link input, credits,
+  Upgrade, avatar), Upload / Google Drive / Try a sample, 8 tool tiles, projects, Learn rows, what's new.
+- **Community:** Free users see "Join the AI AGENT CUT WhatsApp channel" + "Join on Telegram" cards on home, Learn and account.
+- **Learn:** intro card to Daniel Bitton (Content Rewards) linking his YouTube channel, then rows of his long videos
+  and Shorts (YouTube links + thumbnails only; nothing re-hosted).
+- **Connect AI:** bring-your-own keys for Gemini (live), ElevenLabs, Grok, Manus (coming soon).
+- Power features (word editing, platform packs, brand templates) live in the advanced editor at `/classic`.
 
 ## Landing page copy
 > **Long video in. Viral clips out.** ✂️🤖
@@ -59,17 +68,15 @@ Never shame the user; errors say what to do next.
 >
 > *Want to turn clipping into income?* Learn the full agent workflow → https://whop.com/ai-agents-for-clippers-marketers/
 
-## Tiers
-| | FREE (giveaway) | PRO |
+## Tiers (v3)
+| | FREE | ULTRA PRO — $3.99/mo |
 |---|---|---|
-| Clips from upload or link | ✅ | ✅ |
-| Virality score + reason, hook title | ✅ | ✅ + LLM scoring (Ollama/Gemini) |
-| Animated captions, keyword colours, emoji, edit words | ✅ | ✅ |
-| Face reframe / blur-fit, 9:16 · 1:1 · 16:9 | ✅ | ✅ |
-| Filler + silence removal | ✅ | ✅ |
-| Export MP4, **no watermark** | ✅ | ✅ |
-| **MCP server** (agents drive the app: find_clips, render_clip, make_clips, edit_captions, list_projects…) | — | ✅ |
-| Batch / auto-import, priority rendering (roadmap) | — | ✅ |
+| Everything that used to be Pro: clips from upload/link, scores, hook titles, animated captions, reframe, B-roll, filler/silence cut, text editing, platform export | ✅ | ✅ |
+| Credits / month | 60 | 600 |
+| **MCP agent access** (find_clips, render_clip, make_clips, edit_captions, list_projects…) | — | ✅ |
+| Priority rendering, 4K export, no watermark ever | — | ✅ |
+| Batch import / auto-posting (roadmap) | — | ✅ |
+Checkout is not wired yet.
 
 ## Google Play listing
 - **Title (≤30):** AI AGENT CUT: Viral Clip Maker
@@ -85,10 +92,10 @@ Never shame the user; errors say what to do next.
   • 📱 9:16, 1:1 and 16:9
   • ✏️ Fix any caption word and re-render
   • 🆓 No watermark on the free plan
-  PRO adds an agent connector (MCP) so your AI assistants can clip for you.
+  Ultra Pro ($3.99/mo) adds an agent connector (MCP) so your AI assistants can clip for you.
   Learn the agent clipping workflow: https://whop.com/ai-agents-for-clippers-marketers/
 - **Category:** Video Players & Editors · **Tags:** shorts maker, captions, reels, clips, podcast clips.
-- Screenshots: `samples/v1/ui_step1_mobile.png`, `samples/v1/ui_step3_mobile.png` + 3 clip stills.
+- Screenshots: `samples/v3/m1_onboarding_1.png`, `m2_signin.png`, `m3_home.png`, `m4_add_video_sheet.png`, `m5_pricing.png`, `m6_learn.png`.
 
 ## 3 promo hooks (short-form ads), all ending with the course CTA
 1. **"I stopped editing clips. My agent does it now."** — screen: paste link → 3 scored clips appear → tap Save.

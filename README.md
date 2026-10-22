@@ -1,4 +1,7 @@
-# AI AGENT ✚ CUT — v1
+# AI Agent Cut
+
+> **Founded by Wisdom Daniel — Founder & CEO, AI Agent Cut**
+> [X / @WisdomD64553](https://x.com/WisdomD64553) · [LinkedIn](https://www.linkedin.com/in/wisdom-daniel-a2002a2b4/) · Contact: set `CONTACT_EMAIL` in `web/index.html`
 
 Long video (file or URL) → 3–5 vertical 720x1280 MP4 clips with word-by-word burned captions. Everything runs locally.
 
@@ -63,3 +66,20 @@ Own code. Uses ffmpeg (LGPL/GPL binary, called as a separate process), faster-wh
 - B-roll: `--broll auto|"prompt"` (needs `PEXELS_API_KEY`, else skipped) or `--broll-file clip.mp4`.
 - Export: `--xml` / `GET /api/jobs/{id}/clips/{n}/xml?kind=fcpxml|xmeml`; platform presets (`presets.md`) → zip via `--platforms` or UI 📤.
 - MCP adds: edit_sections, export_platforms, export_xml; find_clips takes prompt/genre.
+
+## v3 UI (web/index.html)
+New dark UI and logo (see `brand.md`). Mobile: intro → onboarding → sign-in → Projects / Learn / + sheet / Profile;
+desktop: sidebar + top bar + tool tiles. The previous full editor is at `/classic` (word editing, platform packs, brand templates).
+Screenshots and the logo intro video: `samples/v3/`.
+
+New endpoints in `aiagentcut/server.py`:
+- `GET /api/projects` — past jobs for the home grid.
+- `POST /api/auth/local` — **stub sign-in**. No OAuth is configured: "Continue with Google" and "Continue with email"
+  only create a local profile in the browser (no password, no verification).
+- `POST /api/leads` `{email, source}` — "Get free clipping tips" sign-ups (after sign-in and on Learn).
+  **Leads are stored in `<data dir>/leads/leads.json` and `<data dir>/leads/leads.csv`** (data dir = `AIAC_DATA`, else the repo root;
+  `%LOCALAPPDATA%` on the Windows installer). De-duplicated by email. Nothing is emailed yet; Gmail delivery comes later.
+- `GET/POST /api/ai-keys` — Connect AI. The Gemini key is saved in `<data dir>/ai_keys.json` (chmod 600, accepted from localhost only)
+  and turns on `AIAC_LLM=gemini` scoring/hooks. ElevenLabs, Grok and Manus keys are kept only in the browser's localStorage
+  and marked "coming soon" — not used by the backend yet.
+- Pricing / Ultra Pro checkout, credits counting and Google Drive import are UI-only for now.

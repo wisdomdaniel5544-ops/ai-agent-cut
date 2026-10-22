@@ -16,3 +16,10 @@ templates/assets/*.m4a
 research/
 samples/**/*.mp4
 samples/*.mp4
+leads/
+ai_keys.json
+tests/logs/
+local.properties
+*.jks
+keystore.properties
+samples/**/*.mp4

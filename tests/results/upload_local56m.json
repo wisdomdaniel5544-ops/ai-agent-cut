@@ -1,0 +1,78 @@
+{
+ "label": "upload_local56m",
+ "src": "/workspace/long_test_56m.mp4",
+ "steps": [
+  {
+   "step": "upload",
+   "secs": 0.9,
+   "mb": 216.9
+  },
+  {
+   "step": "fetching",
+   "secs": 1.0
+  },
+  {
+   "step": "cutting silences",
+   "secs": 34.2
+  },
+  {
+   "step": "transcribing",
+   "secs": 149.5
+  },
+  {
+   "step": "picking",
+   "secs": 4.1
+  },
+  {
+   "step": "rendering clip 0/3",
+   "secs": 22.1
+  },
+  {
+   "step": "rendering clip 1/3 done",
+   "secs": 1.0
+  },
+  {
+   "step": "rendering clip 2/3 done",
+   "secs": 17.1
+  },
+  {
+   "step": "rendering clip 3/3 done",
+   "secs": 0.0
+  },
+  {
+   "step": "edit captions + rerender",
+   "secs": 15.9
+  },
+  {
+   "step": "platform export x3",
+   "secs": 43.1
+  }
+ ],
+ "errors": [],
+ "job": "9ff89386",
+ "total_job_secs": 228.9,
+ "clips": [
+  {
+   "score": 92,
+   "duration": 46.4,
+   "reframe": "face",
+   "title": "And they'd be like, how dare you?",
+   "size_mb": 4.25
+  },
+  {
+   "score": 92,
+   "duration": 53.23,
+   "reframe": "face",
+   "title": "What's something that's your work right now?",
+   "size_mb": 4.22
+  },
+  {
+   "score": 88,
+   "duration": 55.2,
+   "reframe": "face",
+   "title": "But when it comes from education, health, government\u2026",
+   "size_mb": 4.19
+  }
+ ],
+ "wall_secs": 289.0
+}

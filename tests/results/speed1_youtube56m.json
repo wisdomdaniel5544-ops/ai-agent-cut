@@ -1,0 +1,73 @@
+{
+ "label": "speed1_youtube56m",
+ "src": "https://www.youtube.com/watch?v=oopwD8yoYqQ",
+ "steps": [
+  {
+   "step": "fetching",
+   "secs": 42.1
+  },
+  {
+   "step": "cutting silences",
+   "secs": 21.1
+  },
+  {
+   "step": "transcribing",
+   "secs": 136.5
+  },
+  {
+   "step": "picking",
+   "secs": 3.0
+  },
+  {
+   "step": "rendering clip 0/3",
+   "secs": 17.1
+  },
+  {
+   "step": "rendering clip 1/3 done",
+   "secs": 1.0
+  },
+  {
+   "step": "rendering clip 2/3 done",
+   "secs": 15.1
+  },
+  {
+   "step": "rendering clip 3/3 done",
+   "secs": 0.0
+  },
+  {
+   "step": "edit captions + rerender",
+   "secs": 13.7
+  },
+  {
+   "step": "platform export x3",
+   "secs": 39.2
+  }
+ ],
+ "errors": [],
+ "job": "4f2f5dda",
+ "total_job_secs": 235.9,
+ "clips": [
+  {
+   "score": 91,
+   "duration": 50.19,
+   "reframe": "face",
+   "title": "Why do you need to be a private\u2026",
+   "size_mb": 4.16
+  },
+  {
+   "score": 87,
+   "duration": 42.88,
+   "reframe": "face",
+   "title": "What does each one feel like, to live\u2026",
+   "size_mb": 4.19
+  },
+  {
+   "score": 85,
+   "duration": 53.67,
+   "reframe": "face",
+   "title": "they never make a mistake, they never sleep",
+   "size_mb": 4.18
+  }
+ ],
+ "wall_secs": 288.8
+}

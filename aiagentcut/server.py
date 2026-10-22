@@ -25,6 +25,73 @@ def sw(): return FileResponse(ROOT / "web" / "sw.js", media_type="text/javascrip
 @app.get("/", response_class=HTMLResponse)
 def index(): return (ROOT / "web" / "index.html").read_text()
 
+@app.get("/classic", response_class=HTMLResponse)
+def classic(): return (ROOT / "web" / "classic.html").read_text()
+
+@app.get("/api/projects")
+def projects():
+    out = []
+    for d in sorted(JOBS_DIR.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True):
+        if not d.is_dir(): continue
+        j = _load(d.name)
+        if not j: continue
+        clips = (j.get("report") or {}).get("clips") or []
+        out.append({"id": d.name, "status": j.get("status"), "clips": len(clips), "mtime": d.stat().st_mtime,
+                    "thumb": ("/files/%s/%s" % (d.name, clips[0]["file"].split("/")[-1])) if clips else None,
+                    "title": (clips[0].get("title") if clips else "") or d.name})
+    return out[:50]
+
+# Local sign-in stub: no real OAuth configured. Stores a display name/email only; no password, no verification.
+@app.post("/api/auth/local")
+def auth_local(email: str = Body("", embed=True), provider: str = Body("email", embed=True)):
+    return {"user": {"email": email or "guest@local", "provider": provider, "plan": "free", "credits": 60, "stub": True}}
+
+# ---- lead capture ("Get free clipping tips"): appended to DATA/leads/leads.csv + leads.json. No email is sent yet.
+LEADS_DIR = DATA / "leads"; LEADS_DIR.mkdir(exist_ok=True)
+_lead_lock = threading.Lock()
+
+@app.post("/api/leads")
+def add_lead(email: str = Body(..., embed=True), source: str = Body("app", embed=True), name: str = Body("", embed=True)):
+    import csv, time
+    email = email.strip().lower()
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email) or len(email) > 254:
+        return JSONResponse({"error": "Enter a valid email"}, 400)
+    row = {"email": email, "name": name.strip()[:80], "source": re.sub(r"[^\w-]", "", source)[:32],
+           "created": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
+    with _lead_lock:
+        jf = LEADS_DIR / "leads.json"; leads = json.loads(jf.read_text()) if jf.exists() else []
+        if any(l["email"] == email for l in leads): return {"ok": True, "duplicate": True}
+        leads.append(row); jf.write_text(json.dumps(leads, indent=1))
+        cf = LEADS_DIR / "leads.csv"; new = not cf.exists()
+        with open(cf, "a", newline="") as fh:
+            w = csv.DictWriter(fh, fieldnames=list(row)); new and w.writeheader(); w.writerow(row)
+    return {"ok": True}
+
+# ---- Connect AI: user's own keys. Only Gemini is wired (engine reads GEMINI_API_KEY + AIAC_LLM=gemini).
+# Stored on THIS machine only in DATA/ai_keys.json (chmod 600); accepted from localhost only. Never returned in full.
+AI_KEYS = DATA / "ai_keys.json"
+def _apply_keys():
+    k = json.loads(AI_KEYS.read_text()) if AI_KEYS.exists() else {}
+    if k.get("gemini"): os.environ["GEMINI_API_KEY"] = k["gemini"]; os.environ.setdefault("AIAC_LLM", "gemini")
+    return k
+_apply_keys()
+
+@app.get("/api/ai-keys")
+def ai_keys_status():
+    k = json.loads(AI_KEYS.read_text()) if AI_KEYS.exists() else {}
+    return {name: ("…" + v[-4:]) if v else "" for name, v in k.items()} | {"wired": ["gemini"]}
+
+@app.post("/api/ai-keys")
+def ai_keys_save(request: Request, provider: str = Body(..., embed=True), key: str = Body("", embed=True)):
+    if request.client and request.client.host not in ("127.0.0.1", "::1", "localhost"):
+        return JSONResponse({"error": "keys can only be set from this computer"}, 403)
+    if provider != "gemini": return JSONResponse({"error": "not wired yet"}, 400)
+    k = json.loads(AI_KEYS.read_text()) if AI_KEYS.exists() else {}
+    k[provider] = key.strip()
+    if not k[provider]: k.pop(provider); os.environ.pop("GEMINI_API_KEY", None)
+    AI_KEYS.write_text(json.dumps(k)); os.chmod(AI_KEYS, 0o600); _apply_keys()
+    return {"ok": True}
+
 @app.get("/api/presets")
 def presets():
     return {"presets": list(PRESETS), "aspects": list(ASPECTS), "genres": list(GENRES),
@@ -92,22 +159,41 @@ def _run(jid, src, n, preset, model, opts):
     j = JOBS[jid]
     def log(m):
         j["log"].append(m)
-        mm = re.match(r"transcribing (\d+)%", m)
-        if mm: j["progress"] = 15 + int(mm.group(1)) * 0.4
+        # coarse but monotonic progress: fetch 2-10, silences 12, transcribe 15-55, pick 58, render 60-98
+        mm = re.match(r"transcribing (\d+)%", m); mr = re.match(r"rendering clip (\d+)/(\d+)", m)
+        if mm: p = 15 + int(mm.group(1)) * 0.4
+        elif mr: p = 60 + 38 * int(mr.group(1)) / max(1, int(mr.group(2)))
+        else: p = {"fetching": 3, "download": 6, "converting": 9, "cutting": 12, "reusing": 14, "picking": 58, "done": 100}.get(m.split(" ")[0], None)
+        if p is not None: j["progress"] = max(j.get("progress", 0), round(p, 1))
     try:
         j["report"] = process(src, JOBS_DIR / jid, n, preset, model, log=log, **opts); j["status"] = "done"
     except Exception as e:
-        j["status"] = "error"; j["log"].append(str(e)[-600:])
+        j["status"] = "error"; j["log"].append(str(e)[-600:]); j["error"] = friendly_error(e)
+
+def friendly_error(e):
+    """Plain-language error + what to do next (raw details stay in the log)."""
+    t = str(e).lower()
+    if isinstance(e, engine.FetchError): return str(e)[:300]
+    if "download" in t or "yt-dlp" in t:
+        return "Couldn't download this link. If it's private, age-restricted or region-locked, download it and upload the file instead."
+    if "no space" in t: return "The disk is full. Free some space and try again."
+    if "cannot allocate memory" in t or isinstance(e, MemoryError): return "Not enough memory for this video. Try a shorter part (trim) or close other apps."
+    if "invalid data" in t or "moov atom" in t or "could not open" in t: return "This file looks damaged or isn't a supported video. Try exporting it again as MP4."
+    if "failed to render" in t: return "A clip failed to render. Try again; if it keeps failing, pick another style or aspect."
+    return "Something went wrong while making clips. Try again; details are in the log."
 
 @app.post("/api/jobs")
 async def create(url: str = Form(""), upload_id: str = Form(""), clips: int = Form(3), preset: str = Form("bold_yellow"),
                  model: str = Form("small"), aspect: str = Form("9:16"), fit: str = Form("auto"),
-                 hook: bool = Form(True), keywords: bool = Form(True), emoji: bool = Form(False),
-                 fillers: bool = Form(True), pauses: bool = Form(False), silence: bool = Form(True),
+                 hook: str | None = Form(None), keywords: str | None = Form(None), emoji: str | None = Form(None),
+                 fillers: str | None = Form(None), pauses: str | None = Form(None), silence: str | None = Form(None),
                  trim_start: float = Form(0), trim_end: float = Form(0), prompt: str = Form(""), genre: str = Form("auto"),
                  min_len: float = Form(30), max_len: float = Form(60), language: str = Form(""),
-                 brand: bool = Form(True), broll: str = Form(""), censor_mode: str = Form("bleep"),
+                 brand: str | None = Form(None), broll: str = Form(""), censor_mode: str = Form("bleep"),
                  file: UploadFile | None = File(None), srt: UploadFile | None = File(None), broll_file: UploadFile | None = File(None)):
+    # FastAPI >=0.150 turns a *missing* bool Form field into False, silently disabling defaults; parse explicitly.
+    _b = lambda v, d: d if v in (None, "") else str(v).strip().lower() in ("1", "true", "on", "yes")
+    hook = _b(hook, True); keywords = _b(keywords, True); emoji = _b(emoji, False); fillers = _b(fillers, True); pauses = _b(pauses, False); silence = _b(silence, True); brand = _b(brand, True)
     jid = uuid.uuid4().hex[:8]; d = JOBS_DIR / jid; d.mkdir()
     if upload_id: src = str(_upload_path(upload_id))
     elif file and file.filename:

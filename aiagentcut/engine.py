@@ -21,6 +21,19 @@ def duration(path):
     return float(run(["ffprobe","-v","error","-show_entries","format=duration","-of","csv=p=0",str(path)]).stdout.strip())
 
 # ---------- 0. fetch ----------
+def ensure_decodable(path, workdir, log=print):
+    """OpenCV's bundled FFmpeg can't decode some codecs (AV1 on CPU, some ProRes/10-bit HEVC). If the first frame
+    can't be read, transcode once to H.264 (cached as decodable.mp4)."""
+    import cv2
+    cap = cv2.VideoCapture(str(path)); ok = cap.isOpened() and cap.read()[0]; cap.release()
+    if ok: return Path(path)
+    out = Path(workdir) / "decodable.mp4"
+    if out.exists() and out.stat().st_size > 0: return out
+    log("converting video to a compatible format")
+    run(["ffmpeg","-y","-v","error","-i",str(path),"-map","0:v:0","-map","0:a:0?","-c:v","libx264","-preset","veryfast","-crf","20",
+         "-pix_fmt","yuv420p","-c:a","aac","-b:a","128k","-movflags","+faststart",str(out)])
+    return out
+
 class FetchError(RuntimeError): pass
 
 def normalize_url(u):
@@ -39,7 +52,8 @@ def fetch(src, workdir, cookies=None, log=print):
     out = workdir / "source.mp4"
     if out.exists() and out.stat().st_size > 0: return out
     url = normalize_url(src.strip()); cookies = cookies or os.environ.get("AIAC_COOKIES")
-    base = YTDLP() + ["--no-playlist","-f","bv*[height<=720]+ba/b[height<=720]/bv*+ba/b","--merge-output-format","mp4",
+    base = YTDLP() + ["--no-playlist","-f","bv*[height<=720]+ba/b[height<=720]/bv*+ba/b","-S","vcodec:h264,res:720,acodec:m4a",
+            "--merge-output-format","mp4","--concurrent-fragments","4",
             "--retries","5","--fragment-retries","10","-o",str(workdir / "source.%(ext)s")] + (["--cookies", cookies] if cookies else [])
     yt = re.search(r"youtu\.?be", url)
     tries = [[]] + ([["--extractor-args", f"youtube:player_client={c}"] for c in ("tv,web_safari", "android,ios", "mweb")] if yt else [])
@@ -78,6 +92,16 @@ def trim_args(trim):
 def pretrim(src, out, trim):
     """Pre-trim (processing timeframe) without re-encoding."""
     run(["ffmpeg","-y","-v","error",*trim_args(trim),"-i",str(src),"-c","copy","-avoid_negative_ts","make_zero",str(out)]); return out
+
+def detect_silences(src, noise_db=-32, min_silence=0.6, margin=0.15):
+    """Audio-only silencedetect (fast: no video decode/encode). Returns [(start, end)] silent ranges, shrunk by margin."""
+    r = subprocess.run(["ffmpeg","-hide_banner","-nostats","-vn","-i",str(src),"-af",f"silencedetect=noise={noise_db}dB:d={min_silence}","-f","null","-"],
+                       capture_output=True, text=True)
+    starts = [float(x) for x in re.findall(r"silence_start: (-?[\d.]+)", r.stderr)]
+    ends = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", r.stderr)]
+    total = duration(src)
+    out = [(max(0.0, s0 + margin), e - margin) for s0, e in zip(starts, ends + [total] * (len(starts) - len(ends)))]
+    return [(round(a, 3), round(b, 3)) for a, b in out if b - a > 0.2]
 
 def silence_cut(src, out, noise_db=-32, min_silence=0.6, margin=0.15, trim=None):
     """Detect silences with ffmpeg silencedetect, keep speech (+margin). Returns kept segments.
@@ -132,14 +156,32 @@ def apply_vocab(tr, vocab):
         s["text"] = " ".join(w["word"] for w in s["words"]) or s["text"]
     return tr
 
-def transcribe(path, model_size="small", language=None, log=print):
+_MODELS = {}
+import threading as _th
+_MODEL_LOCK = _th.Lock()
+def _whisper(model_size):
+    """Load once per process (was reloaded for every job: ~2-6 s and ~0.5-1.5 GB RAM churn each time)."""
     from faster_whisper import WhisperModel
     md = os.environ.get("AIAC_MODEL_DIR")  # bundled models (installer): <dir>/faster-whisper-<size>
     local = Path(md) / f"faster-whisper-{model_size}" if md else None
-    model = WhisperModel(str(local) if local and local.exists() else model_size, device="cpu", compute_type="int8")
+    with _MODEL_LOCK:
+        if model_size not in _MODELS:
+            _MODELS[model_size] = WhisperModel(str(local) if local and local.exists() else model_size, device="cpu",
+                                               compute_type="int8", cpu_threads=int(os.environ.get("AIAC_THREADS") or os.cpu_count() or 4))
+        return _MODELS[model_size]
+
+def transcribe(path, model_size="small", language=None, log=print):
+    model = _whisper(model_size)
     raw = subprocess.run(["ffmpeg","-v","error","-i",str(path),"-ac","1","-ar","16000","-f","s16le","-"],capture_output=True).stdout
     audio = np.frombuffer(raw, np.int16).astype(np.float32)/32768  # decode via ffmpeg (avoids PyAV version issues)
-    segs, info = model.transcribe(audio, word_timestamps=True, language=language or None, vad_filter=True)
+    # Long inputs: faster-whisper's BatchedInferencePipeline (VAD-chunked, batched decoding) is 2-4x faster on CPU.
+    batched = len(audio) > 16000 * 600 and os.environ.get("AIAC_BATCHED", "1") != "0"
+    if batched:
+        from faster_whisper import BatchedInferencePipeline
+        segs, info = BatchedInferencePipeline(model=model).transcribe(audio, word_timestamps=True, language=language or None,
+                                                                      batch_size=int(os.environ.get("AIAC_BATCH", "8")))
+    else:
+        segs, info = model.transcribe(audio, word_timestamps=True, language=language or None, vad_filter=True)
     out = []; total = max(info.duration, 1); last = -1
     for s in segs:  # generator: streamed, so we can report progress on long videos
         pct = int(100 * s.end / total)
@@ -486,10 +528,11 @@ def subtract(ranges, cuts):
         out += segs
     return out
 
-def timeline(clip, words, remove_fillers=True, remove_pauses=False, max_dur=None):
-    """Absolute source ranges in playback order: clip parts (transcript edits) minus fillers/pauses, capped to max_dur."""
+def timeline(clip, words, remove_fillers=True, remove_pauses=False, max_dur=None, silences=None):
+    """Absolute source ranges in playback order: clip parts (transcript edits) minus fillers/pauses/silences, capped to max_dur."""
     parts = clip.get("parts") or [[clip["start"], clip["end"]]]
-    cuts = []
+    lo, hi = min(p[0] for p in parts), max(p[1] for p in parts)
+    cuts = [(a, b) for a, b in (silences or []) if b > lo and a < hi]
     if remove_fillers: cuts += [(w["start"], w["end"]) for w in words if _clean(w["word"]) in FILLERS]
     if remove_pauses:
         ws = [w for w in words if parts[0][0] - 1 <= w["start"] <= max(p[1] for p in parts) + 1]
@@ -601,7 +644,7 @@ def broll_events(cw_words, opts, workdir, main_off, main_dur, log=print):
 # ---------- 9. render ----------
 DEFAULT_OPTS = dict(preset="bold_yellow", aspect="9:16", fit="auto", hook=True, keywords=True, emoji=False,
                     remove_fillers=True, remove_pauses=False, censor=[], censor_mode="bleep", template=None,
-                    broll=None, broll_file=None, max_mb=4.9, fps=None, max_dur=None, size=None)
+                    broll=None, broll_file=None, max_mb=4.9, fps=None, max_dur=None, size=None, silences=None)
 
 def render_clip(media, clip, words, out, workdir=".", opts=None, cw_words=None, log=print, **kw):
     """Render one clip. opts: see DEFAULT_OPTS (+ template: logo, logo_pos, logo_scale, intro, outro, music, music_volume, layout).
@@ -611,7 +654,7 @@ def render_clip(media, clip, words, out, workdir=".", opts=None, cw_words=None, 
     if t.get("layout") and o["fit"] == "auto": o["fit"] = t["layout"]
     ow, oh = o["size"] or ASPECTS[o["aspect"]]
     rd = Reader(media); fps = o["fps"] or min(30, round(rd.fps) or 30)
-    keep = timeline(clip, words, o["remove_fillers"], o["remove_pauses"], o["max_dur"])
+    keep = timeline(clip, words, o["remove_fillers"], o["remove_pauses"], o["max_dur"], o.get("silences"))
     intro = t.get("intro") if t.get("intro") and Path(t["intro"]).exists() else None
     outro = t.get("outro") if t.get("outro") and Path(t["outro"]).exists() else None
     idur = min(duration(intro), 5) if intro else 0.0; odur = min(duration(outro), 5) if outro else 0.0
@@ -676,7 +719,7 @@ def render_clip(media, clip, words, out, workdir=".", opts=None, cw_words=None, 
     for k, p in enumerate(inputs):
         if margs and k + 1 == margs[0]: cmd += ["-stream_loop","-1"]
         cmd += ["-vn","-i",str(p)]
-    cmd += ["-filter_complex",";".join(fc),"-map","[vout]","-map",f"[{last}]","-c:v","libx264","-preset","medium",
+    cmd += ["-filter_complex",";".join(fc),"-map","[vout]","-map",f"[{last}]","-c:v","libx264","-preset",os.environ.get("AIAC_X264_PRESET","veryfast"),
             "-b:v",f"{vbr}k","-maxrate",f"{int(vbr*1.3)}k","-bufsize",f"{vbr*2}k","-pix_fmt","yuv420p","-r",str(fps),
             "-c:a","aac","-b:a","96k","-t",f"{total:.3f}","-movflags","+faststart",str(out)]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -730,6 +773,8 @@ def rerender_with_text(outdir, idx, new_words_text, title=None):
     """Caption edit: replace word texts (same length; '' deletes a word) for clip idx (1-based), re-render."""
     outdir, rep, work, words = _load(outdir); c = rep["clips"][idx-1]
     ws = json.loads((work / (Path(c["file"]).stem + ".words.json")).read_text())
+    if isinstance(new_words_text, str):  # accept "one two three" as well as ["one","two","three"]
+        new_words_text = new_words_text.split()
     if len(new_words_text) != len(ws): raise ValueError(f"expected {len(ws)} words, got {len(new_words_text)}")
     ws = [dict(w, word=t.strip()) for w, t in zip(ws, new_words_text) if t.strip()]
     if title is not None: c["title"] = title
@@ -756,11 +801,14 @@ def edit_sections(outdir, idx, remove=(), add=(), add_at="end"):
 def export_platforms(outdir, idx, platforms, log=print):
     """Render clip idx for several platform presets and zip them. Returns zip path."""
     import zipfile
-    outdir, rep, work, words = _load(outdir); c = rep["clips"][idx-1]; files = []
-    for p in platforms:
+    from concurrent.futures import ThreadPoolExecutor
+    outdir, rep, work, words = _load(outdir); c = rep["clips"][idx-1]
+    def one(p):
         P = PLATFORMS[p]; o = dict(rep["options"]); o.update(aspect=P["aspect"], fps=P["fps"], max_mb=P["max_mb"], max_dur=P["max_dur"])
         out = outdir / f"clip_{idx:02d}_{p}.mp4"; log(f"exporting {P['label']}")
-        render_clip(c["media"], c, words, out, work, o); files.append(out)
+        render_clip(c["media"], c, words, out, work, o); return out
+    workers = max(1, min(len(platforms), int(os.environ.get("AIAC_RENDER_WORKERS") or max(1, (os.cpu_count() or 2) // 3))))
+    with ThreadPoolExecutor(workers) as ex: files = list(ex.map(one, platforms))
     z = outdir / f"clip_{idx:02d}_platforms.zip"
     with zipfile.ZipFile(z, "w", zipfile.ZIP_STORED) as zf:
         for f in files: zf.write(f, f.name)
@@ -773,7 +821,7 @@ def export_xml(outdir, idx, kind="fcpxml"):
     from xml.sax.saxutils import escape
     outdir, rep, work, words = _load(outdir); c = rep["clips"][idx-1]
     media = Path(c["media"]).resolve(); rd = Reader(media); tb = int(round(rd.fps)) or 30
-    keep = [tuple(k) for k in c.get("keep") or timeline(c, words, rep["options"].get("remove_fillers", True))]
+    keep = [tuple(k) for k in c.get("keep") or timeline(c, words, rep["options"].get("remove_fillers", True), silences=rep["options"].get("silences"))]
     f = lambda t: int(round(t * tb)); total = sum(f(b) - f(a) for a, b in keep); name = escape(c.get("title") or f"clip {idx}")
     srcdur = f(duration(media))
     if kind == "fcpxml":
@@ -812,7 +860,7 @@ def process(src, outdir, n_clips=4, preset="bold_yellow", model="small", min_len
     """trim=(start,end) pre-trim seconds; prompt='find a moment'; genre in GENRES; srt=path to user captions
     (skips transcription and silence cut); vocab={wrong: right}; censor=[words]; template=Brand Template dict."""
     outdir = Path(outdir); work = outdir / "work"; work.mkdir(parents=True, exist_ok=True)
-    log("fetching input"); media = fetch(src, work, cookies=cookies, log=log)
+    log("fetching input"); media = ensure_decodable(fetch(src, work, cookies=cookies, log=log), work, log)
     template = template or {}
     opts = dict(preset=preset, aspect=aspect, fit=fit, hook=hook, keywords=keywords, emoji=emoji,
                 remove_fillers=remove_fillers, remove_pauses=remove_pauses, censor=list(censor or template.get("censor") or []),
@@ -826,12 +874,15 @@ def process(src, outdir, n_clips=4, preset="bold_yellow", model="small", min_len
         if trim and any(trim): media = pretrim(media, work / "trimmed.mp4", trim)
         tr = parse_srt(Path(srt).read_text(errors="ignore"), offset=(trim or (0,))[0] or 0); log(f"using uploaded SRT ({len(tr['segments'])} cues)")
     else:
+        if trim and any(trim): media = pretrim(media, work / "trimmed.mp4", trim)
         if silence:
-            cut = work / "cut.mp4"
-            if cached and cut.exists(): log("reusing silence-cut media")
-            else: log("cutting silences"); report["silence"] = {k: v for k, v in silence_cut(media, cut, trim=trim).items() if k != "segments"}
-            media = cut
-        elif trim and any(trim): media = pretrim(media, work / "trimmed.mp4", trim)
+            # v3: detect silences on the audio only and skip them per clip at render time. The old path re-encoded the
+            # whole video through a giant select= expression (minutes per hour of video, and ENOMEM on long inputs).
+            sj = work / "silences.json"
+            if cached and sj.exists(): log("reusing silence map"); sil = json.loads(sj.read_text())
+            else: log("cutting silences"); sil = detect_silences(media); sj.write_text(json.dumps(sil))
+            opts["silences"] = sil
+            report["silence"] = {"original": round(duration(media), 2), "removed_seconds": round(sum(b - a for a, b in sil), 2), "ranges": len(sil)}
         tj = work / "transcript.json"
         if cached: log("reusing transcript"); tr = json.loads(tj.read_text())
         else: tr = transcribe(media, model, language, log=log)
@@ -841,15 +892,25 @@ def process(src, outdir, n_clips=4, preset="bold_yellow", model="small", min_len
     llm = llm_scorer_from_env()
     log("picking clips" + (" (LLM: %s)" % os.environ.get("AIAC_LLM") if llm else "") + (f" for '{prompt}'" if prompt else ""))
     clips = pick_clips(tr, media, n_clips, min_len, max_len, scorer, llm, log, genre=genre, prompt=prompt)
-    results = []
     tag = f"{preset}_{aspect.replace(':','x')}"
-    for i, c in enumerate(clips, 1):
-        out = outdir / f"clip_{i:02d}_{tag}.mp4"
-        log(f"rendering clip {i}/{len(clips)} ({c['start']:.1f}-{c['end']:.1f}s, virality {c['score']})")
-        r = render_clip(media, c, words, out, work, opts, log=log)
+    # Render clips in parallel (each is a Python frame loop + its own ffmpeg; OpenCV/x264 release the GIL).
+    from concurrent.futures import ThreadPoolExecutor
+    workers = max(1, min(len(clips), int(os.environ.get("AIAC_RENDER_WORKERS") or max(1, (os.cpu_count() or 2) // 3))))
+    done_ct = [0]; lock = _th.Lock()
+    def one(ic):
+        i, c = ic; out = outdir / f"clip_{i:02d}_{tag}.mp4"
+        for attempt in (1, 2):  # one retry: transient ffmpeg/pipe failures under load
+            try: r = render_clip(media, c, words, out, work, opts, log=log); break
+            except Exception as e:
+                if attempt == 2: raise RuntimeError(f"clip {i} failed to render: {str(e)[-400:]}")
+                log(f"clip {i} render failed, retrying")
+        with lock:
+            done_ct[0] += 1; log(f"rendering clip {done_ct[0]}/{len(clips)} done (virality {c['score']})")
         r.update(start=round(c["start"], 2), end=round(c["end"], 2), score=c["score"], reason=c["reason"], detail=c.get("detail"),
                  title=c["title"], text=c["text"][:300], media=str(media))
-        results.append(r)
+        return r
+    log(f"rendering clip 0/{len(clips)} ({workers} at a time)")
+    with ThreadPoolExecutor(workers) as ex: results = list(ex.map(one, enumerate(clips, 1)))
     report["clips"] = results
     (outdir / "report.json").write_text(json.dumps(report, indent=1))
     log("done"); return report

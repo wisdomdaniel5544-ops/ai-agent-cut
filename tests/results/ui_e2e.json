@@ -1,0 +1,71 @@
+{
+ "errors": [],
+ "progress": [
+  [
+   4.1,
+   "Starting\u2026"
+  ],
+  [
+   5.1,
+   "fetching input"
+  ],
+  [
+   6.1,
+   "cutting silences"
+  ],
+  [
+   11.1,
+   "Listening 10%"
+  ],
+  [
+   20.2,
+   "Listening 20%"
+  ],
+  [
+   21.2,
+   "Listening 35%"
+  ],
+  [
+   24.2,
+   "Listening 40%"
+  ],
+  [
+   26.2,
+   "Listening 51%"
+  ],
+  [
+   29.2,
+   "Listening 65%"
+  ],
+  [
+   30.2,
+   "Listening 75%"
+  ],
+  [
+   32.2,
+   "Listening 85%"
+  ],
+  [
+   35.2,
+   "picking clips"
+  ],
+  [
+   36.2,
+   "Cutting clip 0 of 3"
+  ],
+  [
+   55.4,
+   "Cutting clip 1 of 3"
+  ],
+  [
+   58.4,
+   "Cutting clip 2 of 3"
+  ],
+  [
+   64.4,
+   "Done! Opening your clips\u2026"
+  ]
+ ],
+ "clips_shown": 3,
+ "secs": 65.7
+}

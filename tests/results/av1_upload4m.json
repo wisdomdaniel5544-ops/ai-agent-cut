@@ -1,0 +1,67 @@
+{
+ "label": "av1_upload4m",
+ "src": "/workspace/av1_4m.mp4",
+ "steps": [
+  {
+   "step": "upload",
+   "secs": 0.0,
+   "mb": 14.9
+  },
+  {
+   "step": "fetching",
+   "secs": 11.0
+  },
+  {
+   "step": "cutting silences",
+   "secs": 3.0
+  },
+  {
+   "step": "transcribing",
+   "secs": 17.1
+  },
+  {
+   "step": "picking",
+   "secs": 0.0
+  },
+  {
+   "step": "rendering clip 0/2",
+   "secs": 25.1
+  },
+  {
+   "step": "rendering clip 1/2 done",
+   "secs": 1.0
+  },
+  {
+   "step": "rendering clip 2/2 done",
+   "secs": 0.0
+  },
+  {
+   "step": "edit captions + rerender",
+   "secs": 15.7
+  },
+  {
+   "step": "platform export x3",
+   "secs": 43.2
+  }
+ ],
+ "errors": [],
+ "job": "192908fa",
+ "total_job_secs": 57.3,
+ "clips": [
+  {
+   "score": 83,
+   "duration": 48.02,
+   "reframe": "face",
+   "title": "And we never will.",
+   "size_mb": 4.26
+  },
+  {
+   "score": 82,
+   "duration": 50.22,
+   "reframe": "face",
+   "title": "Or do you think there's actually like an\u2026",
+   "size_mb": 4.16
+  }
+ ],
+ "wall_secs": 116.1
+}
