@@ -10,7 +10,7 @@ MODELS = [
     {"id": "hunyuan", "label": "HunyuanVideo", "kind": "text", "space": None, "license": "Tencent Hunyuan Community (excludes EU/UK/KR)", "commercial": False},
     {"id": "byok", "label": "Your own paid video key", "kind": "text", "space": None, "license": "your provider's terms", "commercial": True},
 ]
-WORKING = {m.strip() for m in os.environ.get("AIAC_VIDEO_WORKING", "wan22_i2v,cogvideox5b").split(",") if m.strip()}
+WORKING = {m.strip() for m in os.environ.get("AIAC_VIDEO_WORKING", "wan22_i2v").split(",") if m.strip()}
 JOBS = {}
 
 def list_models():
@@ -44,7 +44,7 @@ def _run(jid, m, prompt, image, outdir):
         j.update(status="done", file=f"/genfiles/{out.name}")
     except Exception as e:
         msg = str(e)
-        if "quota" in msg.lower() or "gpu" in msg.lower(): msg = "The free GPU queue is busy or today's free quota is used up. Try again later."
+        if not msg.strip() or "quota" in msg.lower() or "gpu" in msg.lower() or "Cancelled" in type(e).__name__: msg = "The free GPU queue is busy or today's free quota is used up. Try again later."
         j.update(status="error", error=msg[:300])
 
 def start(model_id, prompt, image, outdir):

@@ -359,11 +359,6 @@ def lan(request: Request):
     except Exception: ip = "127.0.0.1"
     return {"url": f"http://{ip}:{port}"}
 
-def main():
-    """AIAC_HOST=0.0.0.0 lets phones on the same Wi-Fi use this PC (Android app 'Connect')."""
-    import uvicorn; uvicorn.run(app, host=os.environ.get("AIAC_HOST", "127.0.0.1"), port=int(os.environ.get("AIAC_PORT", "8765")))
-if __name__ == "__main__": main()
-
 # ---- video models ----
 from . import videogen
 GEN_DIR = DATA / "gen"; GEN_DIR.mkdir(exist_ok=True)
@@ -381,3 +376,9 @@ async def video_job(model: str = Form(...), prompt: str = Form(""), image: Uploa
 def video_status(jid: str): return videogen.JOBS.get(jid) or JSONResponse({"error": "unknown"}, 404)
 @app.get("/genfiles/{name}")
 def genfiles(name: str): return FileResponse(GEN_DIR / Path(name).name)
+
+
+def main():
+    """AIAC_HOST=0.0.0.0 lets phones on the same Wi-Fi use this PC (Android app 'Connect')."""
+    import uvicorn; uvicorn.run(app, host=os.environ.get("AIAC_HOST", "127.0.0.1"), port=int(os.environ.get("AIAC_PORT", "8765")))
+if __name__ == "__main__": main()
